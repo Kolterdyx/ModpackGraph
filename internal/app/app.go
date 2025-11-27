@@ -18,9 +18,9 @@ func (a *App) Startup(ctx context.Context) {
 	a.ctx = ctx
 }
 
-func (a *App) OpenSelectFolderDialog(path string) (string, error) {
+func (a *App) OpenSelectFolderDialog(path, title string) (string, error) {
 	return runtime.OpenDirectoryDialog(a.ctx, runtime.OpenDialogOptions{
-		Title:            "Select Mods Folder",
+		Title:            title,
 		DefaultDirectory: path,
 	})
 }

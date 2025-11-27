@@ -1,0 +1,17 @@
+<p-inputgroup>
+  <input pInputText
+         #dirInput
+         [value]="value"
+         [placeholder]="placeholder"
+         [pTooltip]="value"
+         tooltipPosition="bottom"
+         class="col-span-full"
+         readonly>
+  <p-inputgroup-addon>
+    <p-button
+      label="Select Folder"
+      class="col-span-full"
+      (onClick)="onSelectFolder()"
+    />
+  </p-inputgroup-addon>
+</p-inputgroup>

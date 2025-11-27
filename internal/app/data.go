@@ -7,6 +7,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/labstack/gommon/log"
+	"github.com/pelletier/go-toml/v2"
 	"io"
 	"io/fs"
 	"os"
@@ -14,7 +15,6 @@ import (
 	"strings"
 
 	"github.com/goccy/go-graphviz"
-	"github.com/pelletier/go-toml/v2"
 )
 
 var ignoredMods = map[string]struct{}{
@@ -36,12 +36,17 @@ func shouldIgnore(modid string) bool {
 	return ok
 }
 
-type ModMetadata struct {
+type Mod struct {
 	ID      string `json:"id"`
-	Name    string `json:"name"`
 	Version string `json:"version"`
-	Depends []Dep  `json:"depends"`
-	Path    string `json:"_path"`
+}
+
+type ModMetadata struct {
+	Mod
+	Name     string `json:"name"`
+	Depends  []Dep  `json:"depends"`
+	Embedded []Mod  `json:"embedded"`
+	Path     string `json:"path"`
 }
 
 type Dep struct {
@@ -50,9 +55,7 @@ type Dep struct {
 	Compatibility string `json:"compatibility,omitempty"`
 }
 
-// -----------------------------------------------
 // Extract metadata from bytes of a jar
-// -----------------------------------------------
 func extractMetadataFromBytes(rawBytes []byte) (*ModMetadata, error) {
 	r, err := zip.NewReader(bytes.NewReader(rawBytes), int64(len(rawBytes)))
 	if err != nil {
@@ -60,7 +63,231 @@ func extractMetadataFromBytes(rawBytes []byte) (*ModMetadata, error) {
 	}
 
 	for _, f := range r.File {
+		var meta *ModMetadata
+		switch f.Name {
 		// Fabric
+		case "fabric.mod.json":
+			meta, err = getFabricMetadata(r, f)
+		// Forge modern
+		case "META-INF/mods.toml":
+			meta, err = getForgeMetadata(r, f)
+		// Forge old mcmod.info
+		case "mcmod.info":
+			meta, err = getOldForgeMetadata(r, f)
+		}
+
+		if err != nil {
+			fmt.Printf("Error extracting metadata from %s: %v\n", f.Name, err)
+			continue
+		}
+		return meta, nil
+	}
+
+	return nil, nil
+}
+
+func getFabricMetadata(r *zip.Reader, f *zip.File) (*ModMetadata, error) {
+	rc, err := f.Open()
+	if err != nil {
+		return nil, err
+	}
+	var data map[string]any
+	err = json.NewDecoder(rc).Decode(&data)
+	if err != nil {
+		return nil, err
+	}
+	err = rc.Close()
+	if err != nil {
+		return nil, err
+	}
+
+	modID, _ := data["id"].(string)
+	name, _ := data["name"].(string)
+	version, _ := data["version"].(string)
+	if name == "" {
+		name = modID
+	}
+	var depends []Dep
+	for _, key := range []string{"depends", "recommends", "suggests"} {
+		if val, ok := data[key].(map[string]any); ok {
+			required := key == "depends"
+			for k := range val {
+				depends = append(depends, Dep{
+					ID:            k,
+					Compatibility: fmt.Sprintf("%v", val[k]),
+					Required:      required,
+				})
+			}
+		}
+	}
+
+	embedded, err := getEmbeddedMods(r)
+	if err != nil {
+		fmt.Println("Error getting embedded mods:", err.Error())
+	}
+	return &ModMetadata{
+		Mod: Mod{
+			ID:      modID,
+			Version: version,
+		},
+		Name:     name,
+		Depends:  depends,
+		Embedded: embedded,
+	}, nil
+}
+
+func getForgeMetadata(r *zip.Reader, f *zip.File) (*ModMetadata, error) {
+	rc, err := f.Open()
+	if err != nil {
+		return nil, err
+	}
+	data, _ := io.ReadAll(rc)
+	err = rc.Close()
+	if err != nil {
+		return nil, err
+	}
+
+	var tomlData map[string]any
+	if err := toml.Unmarshal(data, &tomlData); err != nil {
+		return nil, err
+	}
+
+	modsArr, ok := tomlData["mods"].([]any)
+	if !ok || len(modsArr) == 0 {
+		return nil, fmt.Errorf("no mod entries found in mods.toml")
+	}
+	modEntry := modsArr[0].(map[string]any)
+	modID, _ := modEntry["modId"].(string)
+	version, _ := modEntry["version"].(string)
+	name, _ := modEntry["displayName"].(string)
+	if name == "" {
+		name = modID
+	}
+	var depends []Dep
+	if deps, ok := tomlData["dependencies"].(map[string]any); ok {
+		if modDeps, ok := deps[modID].([]any); ok {
+			for _, d := range modDeps {
+				dm := d.(map[string]any)
+				depID, _ := dm["modId"].(string)
+				mandatory, _ := dm["mandatory"].(bool)
+				compat, _ := dm["versionRange"].(string)
+				compat = rangeToCompat(compat)
+				depends = append(depends, Dep{
+					ID:            depID,
+					Compatibility: compat,
+					Required:      mandatory,
+				})
+			}
+		}
+	}
+	embedded, err := getEmbeddedMods(r)
+	if err != nil {
+		fmt.Println("Error getting embedded mods:", err.Error())
+	}
+	return &ModMetadata{
+		Mod: Mod{
+			ID:      modID,
+			Version: version,
+		},
+		Name:     name,
+		Depends:  depends,
+		Embedded: embedded,
+	}, nil
+}
+
+func getOldForgeMetadata(r *zip.Reader, f *zip.File) (*ModMetadata, error) {
+	rc, err := f.Open()
+	if err != nil {
+		return nil, err
+	}
+	var data []map[string]any
+
+	if err = json.NewDecoder(rc).Decode(&data); err != nil {
+		return nil, err
+	}
+
+	if err = rc.Close(); err != nil {
+		return nil, err
+	}
+	if len(data) == 0 {
+		return nil, fmt.Errorf("no mod entries found in mcmod.info")
+	}
+	entry := data[0]
+	modID, _ := entry["modid"].(string)
+	name, _ := entry["name"].(string)
+	version, _ := entry["version"].(string)
+	if name == "" {
+		name = modID
+	}
+	var depends []Dep
+	for _, dep := range entry["dependencies"].([]any) {
+		if s, ok := dep.(string); ok {
+			depends = append(depends, Dep{
+				ID:       s,
+				Required: true,
+			})
+		}
+	}
+	for _, dep := range entry["requiredMods"].([]any) {
+		if s, ok := dep.(string); ok {
+			depends = append(depends, Dep{
+				ID:       s,
+				Required: true,
+			})
+		}
+	}
+	embedded, err := getEmbeddedMods(r)
+	if err != nil {
+		fmt.Println("Error getting embedded mods:", err.Error())
+	}
+	return &ModMetadata{
+		Mod: Mod{
+			ID:      modID,
+			Version: version,
+		},
+		Name:     name,
+		Depends:  depends,
+		Embedded: embedded,
+	}, nil
+}
+
+func getEmbeddedMods(r *zip.Reader) ([]Mod, error) {
+
+	var mods []Mod
+	var paths []string
+	for _, f := range r.File {
+		paths = append(paths, f.Name)
+	}
+
+	// --- 1. META-INF/jars/ and jarjar/ embedded jars ---
+	embeddedPrefixes := []string{
+		"META-INF/jars/",
+		"META-INF/jarjar/",
+	}
+	for _, prefix := range embeddedPrefixes {
+		for _, name := range paths {
+			if strings.HasPrefix(name, prefix) && strings.HasSuffix(name, ".jar") {
+				f, err := r.Open(name)
+				if err != nil {
+					continue
+				}
+				data, err := io.ReadAll(f)
+				_ = f.Close()
+				if err != nil {
+					continue
+				}
+				meta, err := extractMetadataFromBytes(data)
+				if err != nil {
+					continue
+				}
+				if meta != nil {
+					mods = append(mods, meta.Mod)
+				}
+			}
+		}
+	}
+
+	for _, f := range r.File {
 		if f.Name == "fabric.mod.json" {
 			rc, err := f.Open()
 			if err != nil {
@@ -69,145 +296,27 @@ func extractMetadataFromBytes(rawBytes []byte) (*ModMetadata, error) {
 			var data map[string]any
 			err = json.NewDecoder(rc).Decode(&data)
 			if err != nil {
-				return nil, err
+				_ = rc.Close()
+				continue
 			}
-			err = rc.Close()
-			if err != nil {
-				return nil, err
-			}
-
-			modID, _ := data["id"].(string)
-			name, _ := data["name"].(string)
-			version, _ := data["version"].(string)
-			if name == "" {
-				name = modID
-			}
-			var depends []Dep
-			for _, key := range []string{"depends", "recommends", "suggests"} {
-				if val, ok := data[key].(map[string]any); ok {
-					required := key == "depends"
-					for k := range val {
-						depends = append(depends, Dep{
-							ID:            k,
-							Compatibility: fmt.Sprintf("%v", val[k]),
-							Required:      required,
-						})
+			_ = rc.Close()
+			if jars, ok := data["jars"].([]any); ok {
+				for _, entry := range jars {
+					if emap, ok := entry.(map[string]any); ok {
+						if id, ok := emap["id"].(string); ok {
+							if version, ok := emap["version"].(string); ok {
+								mods = append(mods, Mod{
+									ID:      id,
+									Version: version,
+								})
+							}
+						}
 					}
 				}
 			}
-			return &ModMetadata{
-				ID:      modID,
-				Name:    name,
-				Version: version,
-				Depends: depends,
-			}, nil
-		}
-
-		// Forge modern
-		if f.Name == "META-INF/mods.toml" {
-			rc, err := f.Open()
-			if err != nil {
-				continue
-			}
-			data, _ := io.ReadAll(rc)
-			err = rc.Close()
-			if err != nil {
-				return nil, err
-			}
-
-			var tomlData map[string]any
-			if err := toml.Unmarshal(data, &tomlData); err != nil {
-				continue
-			}
-
-			modsArr, ok := tomlData["mods"].([]any)
-			if !ok || len(modsArr) == 0 {
-				continue
-			}
-			modEntry := modsArr[0].(map[string]any)
-			modID, _ := modEntry["modId"].(string)
-			version, _ := modEntry["version"].(string)
-			name, _ := modEntry["displayName"].(string)
-			if name == "" {
-				name = modID
-			}
-			var depends []Dep
-			if deps, ok := tomlData["dependencies"].(map[string]any); ok {
-				if modDeps, ok := deps[modID].([]any); ok {
-					for _, d := range modDeps {
-						dm := d.(map[string]any)
-						depID, _ := dm["modId"].(string)
-						mandatory, _ := dm["mandatory"].(bool)
-						compat, _ := dm["versionRange"].(string)
-						compat = rangeToCompat(compat)
-						depends = append(depends, Dep{
-							ID:            depID,
-							Compatibility: compat,
-							Required:      mandatory,
-						})
-					}
-				}
-			}
-			return &ModMetadata{
-				ID:      modID,
-				Name:    name,
-				Version: version,
-				Depends: depends,
-			}, nil
-		}
-
-		// Forge old mcmod.info
-		if f.Name == "mcmod.info" {
-			rc, err := f.Open()
-			if err != nil {
-				continue
-			}
-			var data []map[string]any
-
-			if err = json.NewDecoder(rc).Decode(&data); err != nil {
-				return nil, err
-			}
-
-			if err = rc.Close(); err != nil {
-				return nil, err
-			}
-			if len(data) == 0 {
-				continue
-			}
-			entry := data[0]
-			modID, _ := entry["modid"].(string)
-			name, _ := entry["name"].(string)
-			version, _ := entry["version"].(string)
-			if name == "" {
-				name = modID
-			}
-			var depends []Dep
-			for _, dep := range entry["dependencies"].([]any) {
-				if s, ok := dep.(string); ok {
-					depends = append(depends, Dep{
-						ID:       s,
-						Required: true,
-					})
-				}
-			}
-			for _, dep := range entry["requiredMods"].([]any) {
-				if s, ok := dep.(string); ok {
-					depends = append(depends, Dep{
-						ID:       s,
-						Required: true,
-					})
-				}
-			}
-			return &ModMetadata{
-				ID:      modID,
-				Name:    name,
-				Version: version,
-				Depends: depends,
-			}, nil
 		}
 	}
-
-	return nil, nil
+	return mods, nil
 }
 
 func rangeToCompat(compat string) string {
@@ -255,9 +364,7 @@ func rangeToCompat(compat string) string {
 	return result.String()
 }
 
-// -----------------------------------------------
 // Extract metadata from a jar path
-// -----------------------------------------------
 func extractModMetadata(jarPath string) *ModMetadata {
 	data, err := os.ReadFile(jarPath)
 	if err != nil {
@@ -273,9 +380,7 @@ func extractModMetadata(jarPath string) *ModMetadata {
 	return meta
 }
 
-// -----------------------------------------------
 // Scan folder
-// -----------------------------------------------
 func scanModFolder(folder string) (map[string]*ModMetadata, error) {
 	mods := make(map[string]*ModMetadata)
 	err := filepath.WalkDir(folder, func(path string, d fs.DirEntry, err error) error {
@@ -301,6 +406,7 @@ func scanModFolder(folder string) (map[string]*ModMetadata, error) {
 	return mods, nil
 }
 
+// generateDependencyGraphSVG generates the dependency graph SVG
 func generateDependencyGraphSVG(ctx context.Context, mods map[string]*ModMetadata) ([]byte, error) {
 	g, err := graphviz.New(ctx)
 	if err != nil {
@@ -329,17 +435,38 @@ func generateDependencyGraphSVG(ctx context.Context, mods map[string]*ModMetadat
 		for _, dep := range mod.Depends {
 			depNode, exists := nodes[dep.ID]
 			if !exists {
-				depNode, err = graph.CreateNodeByName(fmt.Sprintf("%s (missing)\nrequires: %s", dep.ID, dep.Compatibility))
-				if err != nil {
-					return nil, err
-				}
-				depNode.SetID(mod.ID)
-				depNode.SetShape(graphviz.BoxShape)
-				depNode.SetStyle(graphviz.FilledNodeStyle)
-				if !dep.Required {
-					depNode.SetFillColor("yellow")
+				embeddedMod, embedded := func() (*Mod, bool) {
+					for _, em := range mod.Embedded {
+						if em.ID == dep.ID {
+							return &em, true
+						}
+					}
+					return nil, false
+				}()
+
+				if embedded {
+					depNode, err = graph.CreateNodeByName(fmt.Sprintf("%s (embedded)\n%s", embeddedMod.ID, embeddedMod.Version))
+					if err != nil {
+						return nil, err
+					}
+					depNode.SetID(dep.ID)
+					depNode.SetShape(graphviz.BoxShape)
+					depNode.SetStyle(graphviz.FilledNodeStyle)
+					depNode.SetFillColor("lightgray")
+					nodes[dep.ID] = depNode
 				} else {
-					depNode.SetFillColor("red")
+					depNode, err = graph.CreateNodeByName(fmt.Sprintf("%s (missing)\nrequires: %s", dep.ID, dep.Compatibility))
+					if err != nil {
+						return nil, err
+					}
+					depNode.SetID(mod.ID)
+					depNode.SetShape(graphviz.BoxShape)
+					depNode.SetStyle(graphviz.FilledNodeStyle)
+					if !dep.Required {
+						depNode.SetFillColor("yellow")
+					} else {
+						depNode.SetFillColor("red")
+					}
 				}
 			}
 			_, err = graph.CreateEdgeByName(fmt.Sprintf("%s -> %s", mod.ID, dep.ID), nodes[mod.ID], depNode)

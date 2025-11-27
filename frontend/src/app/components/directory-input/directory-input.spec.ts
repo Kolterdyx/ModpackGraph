@@ -1,18 +1,18 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { Importer } from './importer';
+import { DirectoryInput } from './directory-input';
 
-describe('Importer', () => {
-  let component: Importer;
-  let fixture: ComponentFixture<Importer>;
+describe('DirectoryInput', () => {
+  let component: DirectoryInput;
+  let fixture: ComponentFixture<DirectoryInput>;
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [Importer]
+      imports: [DirectoryInput]
     })
     .compileComponents();
 
-    fixture = TestBed.createComponent(Importer);
+    fixture = TestBed.createComponent(DirectoryInput);
     component = fixture.componentInstance;
     fixture.detectChanges();
   });
