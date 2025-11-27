@@ -1,0 +1,24 @@
+<div class="m-4 flex flex-col gap-2">
+  <h2>Import Data</h2>
+  <div class="flex flex-row gap-2">
+    <p-button
+      label="Select mods folder"
+      (onClick)="onSelectFolder()"
+    />
+    <p-button
+      label="Generate graph"
+      [disabled]="!selectedPath"
+      [pTooltip]="!selectedPath ? 'Select a folder first' : undefined"
+      (onClick)="onGenerate()"
+    />
+  </div>
+  @if (selectedPath) {
+    <p>
+      Selected Path: <strong>{{ selectedPath }}</strong>
+    </p>
+  }
+  <div class="mt-4 max-w-full overflow-auto border border-gray-300 p-2">
+    <div #svgContainer class="svg-wrapper"></div>
+  </div>
+</div>
+<p-toast/>

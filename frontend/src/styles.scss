@@ -1,0 +1,53 @@
+
+@import "./tailwind-import.css";
+@import "primeicons/primeicons.css";
+
+* {
+  font-family: 'Lato', sans-serif;
+}
+
+html, body {
+  height: 100%;
+  background-color: var(--p-content-background);
+}
+
+app-root {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+router-outlet + * {
+  /* This selects the immediate component rendered by router-outlet */
+  flex: 1 1 auto;
+  min-height: 0;   /* VERY important to prevent overflow */
+}
+
+h1 {
+  @apply text-4xl font-bold;
+}
+
+h2 {
+  @apply text-3xl font-semibold;
+}
+
+h3 {
+  @apply text-2xl font-medium;
+}
+
+h4 {
+  @apply text-xl font-medium;
+}
+
+h5 {
+  @apply text-lg font-medium;
+}
+
+h6 {
+  @apply text-base font-medium;
+}
+
+p, span, div {
+  @apply text-base;
+}
+

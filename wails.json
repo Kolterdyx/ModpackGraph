@@ -1,0 +1,13 @@
+{
+  "$schema": "https://wails.io/schemas/config.v2.json",
+  "name": "ModpackGraph",
+  "outputfilename": "ModpackGraph",
+  "frontend:install": "npm install",
+  "frontend:build": "npm run build",
+  "frontend:dev:watcher": "npm run start",
+  "frontend:dev:serverUrl": "http://localhost:4200",
+  "author": {
+    "name": "Ciro García Belmonte",
+    "email": "info@cirogarcia.dev"
+  }
+}
