@@ -1,4 +1,9 @@
+.idea
 build/bin
 node_modules
 frontend/dist
+frontend/.angular
+frontend/.idea
 mods
+
+.env
