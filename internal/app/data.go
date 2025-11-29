@@ -6,12 +6,13 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"github.com/labstack/gommon/log"
 	"github.com/pelletier/go-toml/v2"
+	log "github.com/sirupsen/logrus"
 	"io"
 	"io/fs"
 	"os"
 	"path/filepath"
+	"slices"
 	"strings"
 
 	"github.com/goccy/go-graphviz"
@@ -63,6 +64,7 @@ func extractMetadataFromBytes(rawBytes []byte) (*ModMetadata, error) {
 	}
 
 	for _, f := range r.File {
+		log.Debugf("Checking file in jar: %s", f.Name)
 		var meta *ModMetadata
 		switch f.Name {
 		// Fabric
@@ -74,10 +76,12 @@ func extractMetadataFromBytes(rawBytes []byte) (*ModMetadata, error) {
 		// Forge old mcmod.info
 		case "mcmod.info":
 			meta, err = getOldForgeMetadata(r, f)
+		default:
+			continue
 		}
 
 		if err != nil {
-			fmt.Printf("Error extracting metadata from %s: %v\n", f.Name, err)
+			log.WithError(err).Error("Error extracting metadata from %s", f.Name)
 			continue
 		}
 		return meta, nil
@@ -123,7 +127,7 @@ func getFabricMetadata(r *zip.Reader, f *zip.File) (*ModMetadata, error) {
 
 	embedded, err := getEmbeddedMods(r)
 	if err != nil {
-		fmt.Println("Error getting embedded mods:", err.Error())
+		log.WithError(err).Error("Error getting embedded mods")
 	}
 	return &ModMetadata{
 		Mod: Mod{
@@ -182,7 +186,7 @@ func getForgeMetadata(r *zip.Reader, f *zip.File) (*ModMetadata, error) {
 	}
 	embedded, err := getEmbeddedMods(r)
 	if err != nil {
-		fmt.Println("Error getting embedded mods:", err.Error())
+		log.WithError(err).Error("Error getting embedded mods")
 	}
 	return &ModMetadata{
 		Mod: Mod{
@@ -238,7 +242,7 @@ func getOldForgeMetadata(r *zip.Reader, f *zip.File) (*ModMetadata, error) {
 	}
 	embedded, err := getEmbeddedMods(r)
 	if err != nil {
-		fmt.Println("Error getting embedded mods:", err.Error())
+		log.WithError(err).Error("Error getting embedded mods")
 	}
 	return &ModMetadata{
 		Mod: Mod{
@@ -435,25 +439,12 @@ func generateDependencyGraphSVG(ctx context.Context, mods map[string]*ModMetadat
 		for _, dep := range mod.Depends {
 			depNode, exists := nodes[dep.ID]
 			if !exists {
-				embeddedMod, embedded := func() (*Mod, bool) {
-					for _, em := range mod.Embedded {
-						if em.ID == dep.ID {
-							return &em, true
-						}
-					}
-					return nil, false
-				}()
 
-				if embedded {
-					depNode, err = graph.CreateNodeByName(fmt.Sprintf("%s (embedded)\n%s", embeddedMod.ID, embeddedMod.Version))
-					if err != nil {
-						return nil, err
-					}
-					depNode.SetID(dep.ID)
-					depNode.SetShape(graphviz.BoxShape)
-					depNode.SetStyle(graphviz.FilledNodeStyle)
-					depNode.SetFillColor("lightgray")
-					nodes[dep.ID] = depNode
+				if slices.ContainsFunc(mod.Embedded, func(m Mod) bool {
+					return m.ID == dep.ID
+				}) {
+					// Dependency is embedded within the mod jar, nothing to plot
+					continue
 				} else {
 					depNode, err = graph.CreateNodeByName(fmt.Sprintf("%s (missing)\nrequires: %s", dep.ID, dep.Compatibility))
 					if err != nil {

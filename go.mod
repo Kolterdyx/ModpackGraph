@@ -4,9 +4,9 @@ go 1.23
 
 require (
 	github.com/goccy/go-graphviz v0.2.9
-	github.com/labstack/gommon v0.4.2
 	github.com/pelletier/go-toml/v2 v2.2.4
-	github.com/wailsapp/wails/v2 v2.10.2
+	github.com/sirupsen/logrus v1.9.3
+	github.com/wailsapp/wails/v2 v2.11.0
 )
 
 require (
@@ -21,6 +21,7 @@ require (
 	github.com/gorilla/websocket v1.5.3 // indirect
 	github.com/jchv/go-winloader v0.0.0-20210711035445-715c2860da7e // indirect
 	github.com/labstack/echo/v4 v4.13.3 // indirect
+	github.com/labstack/gommon v0.4.2 // indirect
 	github.com/leaanthony/go-ansi-parser v1.6.1 // indirect
 	github.com/leaanthony/gosod v1.0.4 // indirect
 	github.com/leaanthony/slicer v1.6.0 // indirect
@@ -35,7 +36,7 @@ require (
 	github.com/tkrajina/go-reflector v0.5.8 // indirect
 	github.com/valyala/bytebufferpool v1.0.0 // indirect
 	github.com/valyala/fasttemplate v1.2.2 // indirect
-	github.com/wailsapp/go-webview2 v1.0.19 // indirect
+	github.com/wailsapp/go-webview2 v1.0.22 // indirect
 	github.com/wailsapp/mimetype v1.4.1 // indirect
 	golang.org/x/crypto v0.33.0 // indirect
 	golang.org/x/image v0.21.0 // indirect

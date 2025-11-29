@@ -3,6 +3,7 @@ package main
 import (
 	app2 "ModpackGraph/internal/app"
 	"embed"
+	log "github.com/sirupsen/logrus"
 
 	"github.com/wailsapp/wails/v2"
 	"github.com/wailsapp/wails/v2/pkg/options"
@@ -13,6 +14,7 @@ import (
 var assets embed.FS
 
 func main() {
+	log.SetLevel(log.DebugLevel)
 	// Create an instance of the app structure
 	app := app2.NewApp()
 
