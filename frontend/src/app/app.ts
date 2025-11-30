@@ -18,6 +18,7 @@ import { DisplayOptions } from '@/app/models/display-options';
 import { Slider } from 'primeng/slider';
 import { ScrollPanel } from 'primeng/scrollpanel';
 import { BrowserOpenURL } from '@wailsjs/runtime';
+import { LanguageService } from '@services/language-service';
 
 interface SelectValue {
   label: string;
@@ -73,6 +74,7 @@ export class App {
   constructor(
     private readonly fb: FormBuilder,
     private readonly messageService: MessageService,
+    private readonly langService: LanguageService,
   ) {
     for (let l in Layout) {
       this.layoutOptions.push(l)
@@ -109,6 +111,6 @@ export class App {
   }
 
   protected setLanguage(lang: string) {
-    window.location.href = `wails://wails/${lang}/`;
+    this.langService.setLanguage(lang);
   }
 }
