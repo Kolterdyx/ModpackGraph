@@ -14,7 +14,7 @@ import (
 	"text/template"
 )
 
-const DefaultUserLang = "es"
+const DefaultUserLang = "en"
 
 var supportedLangs = []string{"en", "es"}
 
