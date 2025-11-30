@@ -4,8 +4,19 @@ import ForceGraph, { NodeObject } from 'force-graph';
 import { debounceTime, Subject } from 'rxjs';
 import { ToggleButton } from 'primeng/togglebutton';
 import { FormsModule } from '@angular/forms';
+import { converter, parse } from 'culori';
 import Graph = app.Graph;
 import Node = app.Node;
+
+const toOklch = converter<'oklch'>('oklch');
+
+function darker(color: string, amount: number = 0.1): string {
+  const c = toOklch(parse(color));
+  if (!c) {
+    return color;
+  }
+  return `oklch(${Math.max(0, c.l - amount)} ${c.c} ${c.h})`;
+}
 
 @Component({
   selector: 'app-interactive-two-tab',
@@ -25,8 +36,16 @@ export class InteractiveTwoTab implements OnInit {
       return;
     }
     this.data = data;
+    for (const node of data.nodes) {
+      if (node.id && node.icon) {
+        this.images[node.id] = new Image()
+        this.images[node.id].src = node.icon;
+      }
+    }
     this.regenerate$.next()
   }
+
+  private images: { [key: string]: HTMLImageElement } = {};
 
   private graph?: ForceGraph
 
@@ -61,51 +80,37 @@ export class InteractiveTwoTab implements OnInit {
             .linkDirectionalArrowLength(6)
 
           if (this.showIcons) {
-
+            const size = 12;
             this.graph
               .nodeCanvasObject((node: Node & NodeObject, ctx) => {
                 if (!node.id || !node.x || !node.y) {
                   return;
                 }
                 if (!node?.icon) {
-                  if (!node?.name) {
-                    return;
-                  }
-                  const label = node.name;
-                  const fontSize = 2;
-                  ctx.font = `${fontSize}px Sans-Serif`;
-                  const textWidth = ctx.measureText(label).width;
-                  const bckgDimensions = [textWidth, fontSize].map(n => n + fontSize * 0.3); // some padding
-
-                  ctx.fillStyle = node?.color || 'white';
-                  ctx.fillRect(node.x - bckgDimensions[0] / 2, node.y - bckgDimensions[1] / 2, bckgDimensions[0], bckgDimensions[1]);
-
-                  ctx.textAlign = 'center';
-                  ctx.textBaseline = 'middle';
-                  ctx.fillStyle = 'black';
-                  ctx.fillText(label, node.x, node.y);
+                  // draw circle
+                  ctx.beginPath()
+                  ctx.arc(node.x, node.y, size / 2, 0, 2 * Math.PI, false);
+                  ctx.fillStyle = node?.color ?? "#fff";
+                  ctx.fill();
+                  ctx.lineWidth = size / 15;
+                  ctx.strokeStyle = darker(node.color ?? 'white');
+                  ctx.stroke();
                 } else {
-                  const size = 12
-                  const img = new Image();
-                  img.src = node.icon
-                  ctx.drawImage(img, node.x - size / 2, node.y - size / 2, size, size);
+                  ctx.drawImage(this.images[node.id], node.x - size / 2, node.y - size / 2, size, size);
                 }
               })
               .nodePointerAreaPaint((node, color, ctx) => {
                 if (!node.id || !node.x || !node.y) {
                   return;
                 }
-                const size = 12;
                 ctx.fillStyle = color;
                 ctx.fillRect(node.x - size / 2, node.y - size / 2, size, size); // draw square as pointer trap
               })
           }
 
           this.graph
-            .cooldownTicks(100)
             .graphData(this.data ?? {nodes: [], links: []})
 
-          this.graph.onEngineStop(() => this.graph?.zoomToFit(400));
         }
       )
 

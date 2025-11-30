@@ -213,8 +213,9 @@ func getForgeMetadata(r *zip.Reader, f *zip.File) (ModMetadata, error) {
 	var iconPath string
 	if logoFile, ok := modEntry["logoFile"].(string); ok && logoFile != "" {
 		iconPath = logoFile
-	} else {
-		// 2. Check for common icon file names
+	}
+	// 2. Check for common icon file names
+	if iconPath == "" {
 		commonIconNames := []string{"logo.png", "icon.png", "pack.png", "assets/" + modID + "/logo.png", "assets/" + modID + "/icon.png", "assets/" + modID + "/pack.png", modID + ".png"}
 		for _, iconName := range commonIconNames {
 			for _, file := range r.File {
