@@ -44,7 +44,7 @@ type Graph struct {
 }
 
 type Node struct {
-	ID    string `json:"id"`
+	ID    string `json:"id,omitempty" ts_type:"string | number"`
 	Color string `json:"color,omitempty"`
 	Label string `json:"name,omitempty"`
 	Value int    `json:"val,omitempty"`
@@ -54,6 +54,8 @@ type Node struct {
 type Edge struct {
 	Source string `json:"source"`
 	Target string `json:"target"`
+	Label  string `json:"label,omitempty"`
+	Color  string `json:"color,omitempty"`
 }
 
 func NewGraph() *Graph {
@@ -68,7 +70,7 @@ func (g *Graph) AddNode(node Node) Node {
 	return node
 }
 
-func (g *Graph) AddEdgeFromIDs(sourceID, targetID string) {
+func (g *Graph) AddEdgeFromIDs(sourceID, targetID, label string) {
 	if sourceID == targetID {
 		return
 	}
@@ -97,6 +99,8 @@ func (g *Graph) AddEdgeFromIDs(sourceID, targetID string) {
 	g.Edges = append(g.Edges, Edge{
 		Source: sourceID,
 		Target: targetID,
+		Color:  "white",
+		Label:  label,
 	})
 }
 

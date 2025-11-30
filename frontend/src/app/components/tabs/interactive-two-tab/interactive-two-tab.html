@@ -1,1 +1,4 @@
-<p>interactive-two-tab works!</p>
+<div class="h-full w-full flex flex-col gap-2">
+  <p-toggle-button [(ngModel)]="showIcons" (onChange)="regenerate$.next()" onLabel="Hide icons" offLabel="Show icons"/>
+  <div #graph class="h-full w-full bg-black"></div>
+</div>

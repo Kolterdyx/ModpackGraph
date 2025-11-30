@@ -3,6 +3,7 @@ package app
 import (
 	"archive/zip"
 	"bytes"
+	"encoding/base64"
 	"encoding/json"
 	"fmt"
 	"github.com/pelletier/go-toml/v2"
@@ -56,9 +57,10 @@ type Mod struct {
 
 type ModMetadata struct {
 	Mod
-	Name    string `json:"name"`
-	Depends []Dep  `json:"depends"`
-	Path    string `json:"path"`
+	Name     string `json:"name"`
+	Depends  []Dep  `json:"depends"`
+	Path     string `json:"path"`
+	IconData string `json:"iconData,omitempty"`
 }
 
 type Dep struct {
@@ -206,13 +208,66 @@ func getForgeMetadata(r *zip.Reader, f *zip.File) (ModMetadata, error) {
 		}
 	}
 
+	// Find icon file
+	// 1. Check "logoFile" field
+	var iconPath string
+	if logoFile, ok := modEntry["logoFile"].(string); ok && logoFile != "" {
+		iconPath = logoFile
+	} else {
+		// 2. Check for common icon file names
+		commonIconNames := []string{"logo.png", "icon.png", "pack.png", "assets/" + modID + "/logo.png", "assets/" + modID + "/icon.png", "assets/" + modID + "/pack.png", modID + ".png"}
+		for _, iconName := range commonIconNames {
+			for _, file := range r.File {
+				if file.Name == iconName {
+					iconPath = iconName
+					break
+				}
+			}
+			if iconPath != "" {
+				break
+			}
+		}
+	}
+	// 3. Find anything called icon.png, logo.png or pack.png
+	if iconPath == "" {
+		iconNames := []string{"icon.png", "logo.png", "pack.png", strings.ToLower(modID) + ".png"}
+		for _, file := range r.File {
+			lowerName := strings.ToLower(file.Name)
+			for _, iconName := range iconNames {
+				if strings.HasSuffix(lowerName, iconName) {
+					iconPath = file.Name
+					break
+				}
+			}
+		}
+	}
+
+	// Extract icon data
+	var iconData string
+	if iconPath != "" {
+		for _, file := range r.File {
+			if file.Name == iconPath {
+				rc, err := file.Open()
+				if err == nil {
+					iconBytes, err := io.ReadAll(rc)
+					_ = rc.Close()
+					if err == nil {
+						iconData = "data:image/png;base64," + base64.StdEncoding.EncodeToString(iconBytes)
+					}
+				}
+				break
+			}
+		}
+	}
+
 	return ModMetadata{
 		Mod: Mod{
 			ID:      modID,
 			Version: version,
 		},
-		Name:    name,
-		Depends: depends,
+		Name:     name,
+		Depends:  depends,
+		IconData: iconData,
 	}, nil
 }
 
@@ -507,6 +562,7 @@ func generateDependencyGraph(mods map[string]ModMetadata, layout Layout) (*Graph
 		node := graph.AddNode(Node{
 			ID:    mod.ID,
 			Label: fmt.Sprintf("%s\n%s", mod.Name, mod.Version),
+			Icon:  mod.IconData,
 		})
 		if strings.HasPrefix("META-INF", mod.Path) {
 			embeddings[mod.ID] = struct{}{}
@@ -519,7 +575,7 @@ func generateDependencyGraph(mods map[string]ModMetadata, layout Layout) (*Graph
 			if !exists {
 				depNode = Node{
 					ID:    dep.ID,
-					Label: fmt.Sprintf("%s (missing)\nrequires: %s", dep.ID, dep.Compatibility),
+					Label: fmt.Sprintf("%s (missing)", dep.ID),
 				}
 				if !dep.Required {
 					depNode.Color = "yellow"
@@ -528,7 +584,7 @@ func generateDependencyGraph(mods map[string]ModMetadata, layout Layout) (*Graph
 				}
 				nodes[dep.ID] = graph.AddNode(depNode)
 			}
-			graph.AddEdgeFromIDs(mod.ID, dep.ID)
+			graph.AddEdgeFromIDs(mod.ID, dep.ID, fmt.Sprintf("requires: %s", dep.Compatibility))
 		}
 	}
 	graph.Layout = layout

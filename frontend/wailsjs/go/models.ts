@@ -16,13 +16,15 @@ export namespace app {
 	export interface Edge {
 	    source: string;
 	    target: string;
+	    label?: string;
+	    color?: string;
 	}
 	export interface FileFilter {
 	    displayName: string;
 	    pattern: string;
 	}
 	export interface Node {
-	    id: string;
+	    id?: string | number;
 	    color?: string;
 	    name?: string;
 	    val?: number;
