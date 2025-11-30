@@ -11,6 +11,7 @@ import (
 	"io"
 	"io/fs"
 	"os"
+	"path"
 	"path/filepath"
 	"strings"
 )
@@ -216,7 +217,15 @@ func getForgeMetadata(r *zip.Reader, f *zip.File) (ModMetadata, error) {
 	}
 	// 2. Check for common icon file names
 	if iconPath == "" {
-		commonIconNames := []string{"logo.png", "icon.png", "pack.png", "assets/" + modID + "/logo.png", "assets/" + modID + "/icon.png", "assets/" + modID + "/pack.png", modID + ".png"}
+		commonIconNames := []string{
+			"logo.png",
+			"icon.png",
+			"pack.png",
+			"assets/" + modID + "/logo.png",
+			"assets/" + modID + "/icon.png",
+			"assets/" + modID + "/pack.png",
+			modID + ".png",
+		}
 		for _, iconName := range commonIconNames {
 			for _, file := range r.File {
 				if file.Name == iconName {
@@ -231,11 +240,16 @@ func getForgeMetadata(r *zip.Reader, f *zip.File) (ModMetadata, error) {
 	}
 	// 3. Find anything called icon.png, logo.png or pack.png
 	if iconPath == "" {
-		iconNames := []string{"icon.png", "logo.png", "pack.png", strings.ToLower(modID) + ".png"}
+		iconNames := []string{
+			"icon.png",
+			"logo.png",
+			"pack.png",
+			strings.ToLower(modID) + ".png",
+		}
 		for _, file := range r.File {
 			lowerName := strings.ToLower(file.Name)
 			for _, iconName := range iconNames {
-				if strings.HasSuffix(lowerName, iconName) {
+				if path.Base(lowerName) == iconName {
 					iconPath = file.Name
 					break
 				}

@@ -3,10 +3,15 @@ import { app } from '@wailsjs/go/models';
 import Graph = app.Graph;
 import { debounceTime, Subject } from 'rxjs';
 import ForceGraph3D, { ForceGraph3DInstance } from '3d-force-graph';
+import { ToggleButton } from 'primeng/togglebutton';
+import { FormsModule } from '@angular/forms';
 
 @Component({
   selector: 'app-interactive-three-tab',
-  imports: [],
+  imports: [
+    ToggleButton,
+    FormsModule
+  ],
   templateUrl: './interactive-three-tab.html',
   styleUrl: './interactive-three-tab.scss',
 })

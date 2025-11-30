@@ -1,3 +1,6 @@
-<div class="h-full w-full bg-black">
-  <div #graph class="h-full w-full bg-black"></div>
+<div class="flex flex-col gap-2 h-full w-full min-h-0 min-w-0 overflow-hidden">
+  <p-toggle-button [(ngModel)]="showIcons" (onChange)="regenerate$.next()" onLabel="Hide icons" offLabel="Show icons"/>
+  <div class="relative flex-grow min-h-0 min-w-0 overflow-hidden  border border-gray-300 bg-black">
+    <div #graph class="absoule inset-0 h-full w-full"></div>
+  </div>
 </div>

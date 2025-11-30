@@ -17,7 +17,7 @@
       (onClick)="onGenerate()"
     />
   </div>
-  <div class="flex flex-col gap-3 w-3/4 max-h-full p-4">
+  <div class="flex flex-col gap-3 w-3/4 max-w-3/4 max-h-screen p-8 min-h-0">
     <p-select-button fluid [options]="items" [(ngModel)]="currentTab">
       <ng-template #item let-item>
         <i [class]="item?.icon"></i>
@@ -29,7 +29,7 @@
         <app-svg-graph-tab class="w-full h-full" [graphData]="graphData"/>
       }
       @case ('2Di') {
-        <app-interactive-two-tab class="w-full h-full" [graphData]="graphData"/>
+        <app-interactive-two-tab class="h-full w-full flex flex-col gap-2 min-h-0" [graphData]="graphData"/>
       }
       @case ('3Di') {
         <app-interactive-three-tab class="w-full h-full" [graphData]="graphData"/>

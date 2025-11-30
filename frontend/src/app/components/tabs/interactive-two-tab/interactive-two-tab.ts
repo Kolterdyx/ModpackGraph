@@ -55,23 +55,28 @@ export class InteractiveTwoTab implements OnInit {
 
   protected showIcons: boolean = false;
 
+  private resizeObserver?: ResizeObserver;
+
   constructor() {
   }
 
-  private resizeCanvas() {
-    for (let canvasEl of this.graphElement.nativeElement.getElementsByTagName("canvas")) {
-      canvasEl.removeAttribute("width");
-      canvasEl.removeAttribute("height");
-      canvasEl.style.width = "100%";
-      canvasEl.style.height = "100%";
-    }
-  }
-
   ngOnInit(): void {
+
+    this.resizeObserver = new ResizeObserver((entries, observer) => {
+      if (this.graph) {
+        const rect = this.graphElement.nativeElement.getBoundingClientRect();
+        this.graph.width(rect.width).height(rect.height);
+      }
+    });
+
+    this.resizeObserver.observe(this.graphElement.nativeElement);
     this.regenerate$
       .pipe(debounceTime(500))
       .subscribe(() => {
+          const rect = this.graphElement.nativeElement.getBoundingClientRect();
           this.graph = new ForceGraph(this.graphElement.nativeElement)
+            .width(rect.width)
+            .height(rect.height)
             .linkLabel('label')
             .linkWidth(1)
             .backgroundColor("#000")
@@ -107,13 +112,10 @@ export class InteractiveTwoTab implements OnInit {
                 ctx.fillRect(node.x - size / 2, node.y - size / 2, size, size); // draw square as pointer trap
               })
           }
-
-          this.graph
-            .graphData(this.data ?? {nodes: [], links: []})
-
+          this.graph.graphData(this.data ?? {nodes: [], links: []})
         }
       )
-
+    this.regenerate$.next()
   }
 
 }
