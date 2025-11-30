@@ -14,6 +14,11 @@ func ValueOrDefault[T any](value *T, defaultValue T) T {
 	return defaultValue
 }
 
+func ValueOrZero[T any](value *T) T {
+	var zero T
+	return ValueOrDefault(value, zero)
+}
+
 func Ptr[T any](value T) *T {
 	return &value
 }

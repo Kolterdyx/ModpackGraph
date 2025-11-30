@@ -1,4 +1,4 @@
-<div class="flex flex-row h-full w-full">
+<div class="flex flex-row h-full w-full bg-gray-900">
   <div class="p-4 w-128 ">
     <h2 class="col-span-full mb-4">Import Data</h2>
     <div class="mb-4">
@@ -8,7 +8,7 @@
             [control]="formGroup.get('path')"
             placeholder="Select Mods Folder"
           ></app-directory-input>
-          <p-select [options]="layoutOptions" formControlName="layout" />
+          <p-select [options]="layoutOptions" formControlName="layout"/>
         </form>
       }
     </div>
@@ -19,8 +19,8 @@
       (onClick)="onGenerate()"
     />
   </div>
-  <div class="mt-4 max-w-full overflow-auto border border-gray-300 m-2 w-full">
-    <div #svgContainer class="svg-wrapper"></div>
+  <div class="max-w-full overflow-auto border border-gray-300 bg-black m-2 w-full">
+    <app-svgviewer [svgData]="svgData"/>
   </div>
 </div>
 <p-toast/>

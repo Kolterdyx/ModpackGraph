@@ -5,11 +5,22 @@ import DefaultTheme from '@primeuix/themes/aura';
 import { provideAnimationsAsync } from '@angular/platform-browser/animations/async';
 import { definePreset } from '@primeuix/themes';
 
-const Theme = definePreset(DefaultTheme, {
+const Theme = definePreset({
   options: {
     darkModeSelector: '.dark-theme',
+  },
+  components: {
+    toast: {
+      colorScheme: {
+        dark: {
+          info: {
+            background: '{surface.900}',
+          }
+        }
+      }
+    },
   }
-});
+}, DefaultTheme);
 
 export const appConfig: ApplicationConfig = {
   providers: [

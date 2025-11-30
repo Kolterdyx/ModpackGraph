@@ -18,8 +18,8 @@ export namespace app {
 	    pattern: string;
 	}
 	export interface GraphOptions {
-	    path: string;
-	    layout: Layout;
+	    path?: string;
+	    layout?: Layout;
 	}
 	export interface OpenDialogOptions {
 	    title?: string;

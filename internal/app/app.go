@@ -2,7 +2,9 @@ package app
 
 import (
 	"context"
+	"encoding/json"
 	"github.com/goccy/go-graphviz"
+	log "github.com/sirupsen/logrus"
 	"github.com/wailsapp/wails/v2/pkg/runtime"
 )
 
@@ -67,19 +69,30 @@ func (l Layout) Graphviz() graphviz.Layout {
 }
 
 type GraphOptions struct {
-	Path   string `json:"path"`
-	Layout Layout `json:"layout"`
+	Path   string `json:"path,omitempty"`
+	Layout Layout `json:"layout,omitempty"`
 }
 
-func (a *App) GenerateDependencyGraph(options GraphOptions) (string, error) {
+func (a *App) GenerateDependencyGraphJSON(options GraphOptions) (string, error) {
 	modData, err := scanModFolder(options.Path)
 	if err != nil {
 		return "", err
 	}
+	graphData, err := json.Marshal(modData)
+	return string(graphData), err
+}
+
+func (a *App) GenerateDependencyGraphSVG(options GraphOptions) (string, error) {
+	modData, err := scanModFolder(options.Path)
+	if err != nil {
+		return "", err
+	}
+	log.Debug("Scanned mod folder")
 	svgData, err := generateDependencyGraphSVG(a.ctx, modData, options)
 	if err != nil {
 		return "", err
 	}
+	log.Debug("Generated SVG data")
 	content := string(svgData)
 	// remove everything before <svg
 	svgIndex := -1

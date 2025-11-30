@@ -1,15 +1,19 @@
-import { Component, ElementRef, ViewChild } from '@angular/core';
+import { Component } from '@angular/core';
 import { Button } from 'primeng/button';
 import { Toast } from 'primeng/toast';
 import { MessageService } from 'primeng/api';
-import { GenerateDependencyGraph } from '@wailsjs/go/app/App';
-import SvgPanZoom from 'svg-pan-zoom';
+import { GenerateDependencyGraphSVG } from '@wailsjs/go/app/App';
 import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { DirectoryInput } from '@components/directory-input/directory-input';
 import * as Models from '@wailsjs/go/models';
+import { Select } from 'primeng/select';
 import GraphOptions = Models.app.GraphOptions;
 import Layout = Models.app.Layout;
-import { Select, SelectItem } from 'primeng/select';
+import { SVGViewer } from '@components/svgviewer/svgviewer';
+
+type Form<T> = {
+  [K in keyof T]: FormControl<T[K] | null>;
+};
 
 @Component({
   selector: 'app-root',
@@ -20,7 +24,7 @@ import { Select, SelectItem } from 'primeng/select';
     ReactiveFormsModule,
     DirectoryInput,
     Select,
-    SelectItem,
+    SVGViewer,
   ],
   providers: [
     MessageService,
@@ -29,15 +33,11 @@ import { Select, SelectItem } from 'primeng/select';
 })
 export class App {
 
-  @ViewChild('svgContainer', {static: true}) svgContainer!: ElementRef<HTMLDivElement>;
-
-  protected svgData?: string;
-
-  private panZoomInstance: any;
-
-  protected formGroup?: FormGroup;
+  protected formGroup?: FormGroup<Form<GraphOptions>>;
 
   protected layoutOptions: string[] = [];
+
+  protected svgData?: string;
 
   constructor(
     private readonly messageService: MessageService,
@@ -45,39 +45,21 @@ export class App {
     for (let l in Layout) {
       this.layoutOptions.push(l)
     }
-    this.formGroup = new FormGroup({
-      path: new FormControl('', [Validators.required]),
-      layout: new FormControl(Layout.fdp, [Validators.required]),
+    this.formGroup = new FormGroup<Form<GraphOptions>>({
+      path: new FormControl<string>('', [Validators.required]),
+      layout: new FormControl<Layout>(Layout.fdp, [Validators.required]),
     });
   }
-
   protected async onGenerate() {
     this.messageService.add({severity: 'info', summary: 'Generating graph', detail: `Generating graph...`});
     try {
-      const formData = this.formGroup?.value as GraphOptions;
-      this.svgData = await GenerateDependencyGraph(formData);
-      this.replaceSVGElement();
+      const formValue = this.formGroup?.value;
+      console.log(formValue);
+      this.svgData = await GenerateDependencyGraphSVG(formValue as GraphOptions);
       this.messageService.add({severity: 'success', summary: 'Graph generated', detail: `Graph generated successfully.`});
     } catch (error) {
       this.messageService.add({severity: 'error', summary: 'Something went wrong.', detail: `Error: ${error}`});
       console.error("Error generating graph:", error);
-    }
-  }
-
-  private replaceSVGElement() {
-    if (!this.svgData) return;
-    this.svgContainer.nativeElement.innerHTML = this.svgData;
-    const svgEl = this.svgContainer.nativeElement.querySelector('svg');
-    if (svgEl) {
-      if (this.panZoomInstance) this.panZoomInstance.destroy();
-      this.panZoomInstance = SvgPanZoom(svgEl, {
-        zoomEnabled: true,
-        controlIconsEnabled: true,
-        fit: true,
-        center: true,
-        minZoom: 0.1,
-        maxZoom: 10,
-      });
     }
   }
 

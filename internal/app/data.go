@@ -12,21 +12,32 @@ import (
 	"io/fs"
 	"os"
 	"path/filepath"
-	"slices"
 	"strings"
 
 	"github.com/goccy/go-graphviz"
 )
 
 var ignoredMods = map[string]struct{}{
-	"minecraft": {}, "forge": {}, "neoforge": {}, "fabricloader": {},
-	"fabric-loader": {}, "fabric": {}, "fabric-api": {}, "fabric_api": {},
-	"fabric-resource-loader-v0": {}, "fabric-screen-api-v1": {},
-	"fabric-networking-api-v1": {}, "fabric-lifecycle-events-v1": {},
-	"fabric-renderer-api-v1": {}, "fabric-registry-sync-v0": {},
-	"fabric-api-base": {}, "fabric-events-interaction-v0": {},
-	"fabric-permissions-api-v0": {}, "fabric-command-api-v2": {},
-	"fabric-kotlin": {}, "java": {},
+	"minecraft":                    {},
+	"forge":                        {},
+	"neoforge":                     {},
+	"fabricloader":                 {},
+	"fabric-loader":                {},
+	"fabric":                       {},
+	"fabric-api":                   {},
+	"fabric_api":                   {},
+	"fabric-resource-loader-v0":    {},
+	"fabric-screen-api-v1":         {},
+	"fabric-networking-api-v1":     {},
+	"fabric-lifecycle-events-v1":   {},
+	"fabric-renderer-api-v1":       {},
+	"fabric-registry-sync-v0":      {},
+	"fabric-api-base":              {},
+	"fabric-events-interaction-v0": {},
+	"fabric-permissions-api-v0":    {},
+	"fabric-command-api-v2":        {},
+	"fabric-kotlin":                {},
+	"java":                         {},
 }
 
 func shouldIgnore(modid string) bool {
@@ -44,10 +55,9 @@ type Mod struct {
 
 type ModMetadata struct {
 	Mod
-	Name     string `json:"name"`
-	Depends  []Dep  `json:"depends"`
-	Embedded []Mod  `json:"embedded"`
-	Path     string `json:"path"`
+	Name    string `json:"name"`
+	Depends []Dep  `json:"depends"`
+	Path    string `json:"path"`
 }
 
 type Dep struct {
@@ -56,52 +66,24 @@ type Dep struct {
 	Compatibility string `json:"compatibility,omitempty"`
 }
 
-// Extract metadata from bytes of a jar
-func extractMetadataFromBytes(rawBytes []byte) (*ModMetadata, error) {
-	r, err := zip.NewReader(bytes.NewReader(rawBytes), int64(len(rawBytes)))
-	if err != nil {
-		return nil, err
-	}
-
-	for _, f := range r.File {
-		var meta *ModMetadata
-		switch f.Name {
-		// Fabric
-		case "fabric.mod.json":
-			meta, err = getFabricMetadata(r, f)
-		// Forge modern
-		case "META-INF/mods.toml":
-			meta, err = getForgeMetadata(r, f)
-		// Forge old mcmod.info
-		case "mcmod.info":
-			meta, err = getOldForgeMetadata(r, f)
-		default:
-			continue
+func getFabricMetadata(f *zip.File) (ModMetadata, error) {
+	defer func() {
+		if r := recover(); r != nil {
+			log.Errorf("Recovered in getFabricMetadata: %v", r)
 		}
-
-		if err != nil {
-			log.WithError(err).Error("Error extracting metadata from %s", f.Name)
-			continue
-		}
-		return meta, nil
-	}
-
-	return nil, nil
-}
-
-func getFabricMetadata(r *zip.Reader, f *zip.File) (*ModMetadata, error) {
+	}()
 	rc, err := f.Open()
 	if err != nil {
-		return nil, err
+		return ModMetadata{}, err
 	}
 	var data map[string]any
 	err = json.NewDecoder(rc).Decode(&data)
 	if err != nil {
-		return nil, err
+		return ModMetadata{}, err
 	}
 	err = rc.Close()
 	if err != nil {
-		return nil, err
+		return ModMetadata{}, err
 	}
 
 	modID, _ := data["id"].(string)
@@ -124,202 +106,188 @@ func getFabricMetadata(r *zip.Reader, f *zip.File) (*ModMetadata, error) {
 		}
 	}
 
-	embedded, err := getEmbeddedMods(r)
-	if err != nil {
-		log.WithError(err).Error("Error getting embedded mods")
-	}
-	return &ModMetadata{
+	return ModMetadata{
 		Mod: Mod{
 			ID:      modID,
 			Version: version,
 		},
-		Name:     name,
-		Depends:  depends,
-		Embedded: embedded,
+		Name:    name,
+		Depends: depends,
 	}, nil
 }
 
-func getForgeMetadata(r *zip.Reader, f *zip.File) (*ModMetadata, error) {
+func getForgeMetadata(r *zip.Reader, f *zip.File) (ModMetadata, error) {
+	defer func() {
+		if r := recover(); r != nil {
+			log.Errorf("Recovered in getForgeMetadata: %v", r)
+		}
+	}()
 	rc, err := f.Open()
 	if err != nil {
-		return nil, err
+		return ModMetadata{}, err
 	}
 	data, _ := io.ReadAll(rc)
 	err = rc.Close()
 	if err != nil {
-		return nil, err
+		return ModMetadata{}, err
 	}
 
 	var tomlData map[string]any
 	if err := toml.Unmarshal(data, &tomlData); err != nil {
-		return nil, err
+		return ModMetadata{}, err
 	}
-
-	modsArr, ok := tomlData["mods"].([]any)
+	modsAny, ok := tomlData["mods"]
+	if !ok {
+		return ModMetadata{}, fmt.Errorf("no mods section found in mods.toml")
+	}
+	modsArr, ok := modsAny.([]any)
 	if !ok || len(modsArr) == 0 {
-		return nil, fmt.Errorf("no mod entries found in mods.toml")
+		return ModMetadata{}, fmt.Errorf("no mod entries found in mods.toml")
 	}
-	modEntry := modsArr[0].(map[string]any)
-	modID, _ := modEntry["modId"].(string)
-	version, _ := modEntry["version"].(string)
-	name, _ := modEntry["displayName"].(string)
-	if name == "" {
+	modEntry, ok := modsArr[0].(map[string]any)
+	if !ok {
+		return ModMetadata{}, fmt.Errorf("invalid mod entry in mods.toml")
+	}
+	modID, ok := modEntry["modId"].(string)
+	if !ok {
+		return ModMetadata{}, fmt.Errorf("modId not found in mods.toml")
+	}
+	version, ok := modEntry["version"].(string)
+	if !ok || version == "" {
+		version = "<not specified>"
+	}
+	if version == "${file.jarVersion}" {
+		// extract from MANIFEST.MF
+		for _, mfFile := range r.File {
+			if mfFile.Name == "META-INF/MANIFEST.MF" {
+				rc, err := mfFile.Open()
+				if err != nil {
+					return ModMetadata{}, err
+				}
+				manifestData, _ := io.ReadAll(rc)
+				err = rc.Close()
+				if err != nil {
+					return ModMetadata{}, err
+				}
+				lines := strings.Split(string(manifestData), "\n")
+				for _, line := range lines {
+					if strings.HasPrefix(line, "Implementation-Version:") {
+						version = strings.TrimSpace(strings.TrimPrefix(line, "Implementation-Version:"))
+						break
+					}
+				}
+				break
+			}
+		}
+	}
+	name, ok := modEntry["displayName"].(string)
+	if !ok || name == "" {
 		name = modID
 	}
 	var depends []Dep
 	if deps, ok := tomlData["dependencies"].(map[string]any); ok {
-		if modDeps, ok := deps[modID].([]any); ok {
-			for _, d := range modDeps {
-				dm := d.(map[string]any)
-				depID, _ := dm["modId"].(string)
-				mandatory, _ := dm["mandatory"].(bool)
-				compat, _ := dm["versionRange"].(string)
-				compat = rangeToCompat(compat)
-				depends = append(depends, Dep{
-					ID:            depID,
-					Compatibility: compat,
-					Required:      mandatory,
-				})
+		modDepsAny, ok := deps[modID]
+		if ok {
+			if modDeps, ok := modDepsAny.([]any); ok {
+				for _, d := range modDeps {
+					dm := d.(map[string]any)
+					depID, _ := dm["modId"].(string)
+					mandatory, _ := dm["mandatory"].(bool)
+					compat, _ := dm["versionRange"].(string)
+					compat = rangeToCompat(compat)
+					depends = append(depends, Dep{
+						ID:            depID,
+						Compatibility: compat,
+						Required:      mandatory,
+					})
+				}
 			}
 		}
 	}
-	embedded, err := getEmbeddedMods(r)
-	if err != nil {
-		log.WithError(err).Error("Error getting embedded mods")
-	}
-	return &ModMetadata{
+
+	return ModMetadata{
 		Mod: Mod{
 			ID:      modID,
 			Version: version,
 		},
-		Name:     name,
-		Depends:  depends,
-		Embedded: embedded,
+		Name:    name,
+		Depends: depends,
 	}, nil
 }
 
-func getOldForgeMetadata(r *zip.Reader, f *zip.File) (*ModMetadata, error) {
+func getOldForgeMetadata(f *zip.File) (ModMetadata, error) {
+	defer func() {
+		if r := recover(); r != nil {
+			log.Errorf("Recovered in getOldForgeMetadata: %v", r)
+		}
+	}()
 	rc, err := f.Open()
 	if err != nil {
-		return nil, err
+		return ModMetadata{}, err
 	}
 	var data []map[string]any
 
 	if err = json.NewDecoder(rc).Decode(&data); err != nil {
-		return nil, err
+		return ModMetadata{}, err
 	}
 
 	if err = rc.Close(); err != nil {
-		return nil, err
+		return ModMetadata{}, err
 	}
 	if len(data) == 0 {
-		return nil, fmt.Errorf("no mod entries found in mcmod.info")
+		return ModMetadata{}, fmt.Errorf("no mod entries found in mcmod.info")
 	}
 	entry := data[0]
-	modID, _ := entry["modid"].(string)
-	name, _ := entry["name"].(string)
-	version, _ := entry["version"].(string)
+	modID, ok := entry["modid"].(string)
+	if !ok {
+		return ModMetadata{}, fmt.Errorf("modid not found in mcmod.info")
+	}
+	name, ok := entry["name"].(string)
+	if !ok {
+		name = modID
+	}
+	version, ok := entry["version"].(string)
+	if !ok {
+		version = "<not specified>"
+	}
 	if name == "" {
 		name = modID
 	}
 	var depends []Dep
-	for _, dep := range entry["dependencies"].([]any) {
-		if s, ok := dep.(string); ok {
-			depends = append(depends, Dep{
-				ID:       s,
-				Required: true,
-			})
+
+	if deps, ok := entry["dependencies"]; ok {
+		if depsArr, ok := deps.([]any); ok {
+			for _, dep := range depsArr {
+				if s, ok := dep.(string); ok {
+					depends = append(depends, Dep{
+						ID:       s,
+						Required: true,
+					})
+				}
+			}
 		}
 	}
-	for _, dep := range entry["requiredMods"].([]any) {
-		if s, ok := dep.(string); ok {
-			depends = append(depends, Dep{
-				ID:       s,
-				Required: true,
-			})
+
+	if deps, ok := entry["requiredMods"]; ok {
+		if depsArr, ok := deps.([]any); ok {
+			for _, dep := range depsArr {
+				if s, ok := dep.(string); ok {
+					depends = append(depends, Dep{
+						ID:       s,
+						Required: true,
+					})
+				}
+			}
 		}
 	}
-	embedded, err := getEmbeddedMods(r)
-	if err != nil {
-		log.WithError(err).Error("Error getting embedded mods")
-	}
-	return &ModMetadata{
+	return ModMetadata{
 		Mod: Mod{
 			ID:      modID,
 			Version: version,
 		},
-		Name:     name,
-		Depends:  depends,
-		Embedded: embedded,
+		Name:    name,
+		Depends: depends,
 	}, nil
-}
-
-func getEmbeddedMods(r *zip.Reader) ([]Mod, error) {
-
-	var mods []Mod
-	var paths []string
-	for _, f := range r.File {
-		paths = append(paths, f.Name)
-	}
-
-	// --- 1. META-INF/jars/ and jarjar/ embedded jars ---
-	embeddedPrefixes := []string{
-		"META-INF/jars/",
-		"META-INF/jarjar/",
-	}
-	for _, prefix := range embeddedPrefixes {
-		for _, name := range paths {
-			if strings.HasPrefix(name, prefix) && strings.HasSuffix(name, ".jar") {
-				f, err := r.Open(name)
-				if err != nil {
-					continue
-				}
-				data, err := io.ReadAll(f)
-				_ = f.Close()
-				if err != nil {
-					continue
-				}
-				meta, err := extractMetadataFromBytes(data)
-				if err != nil {
-					continue
-				}
-				if meta != nil {
-					mods = append(mods, meta.Mod)
-				}
-			}
-		}
-	}
-
-	for _, f := range r.File {
-		if f.Name == "fabric.mod.json" {
-			rc, err := f.Open()
-			if err != nil {
-				continue
-			}
-			var data map[string]any
-			err = json.NewDecoder(rc).Decode(&data)
-			if err != nil {
-				_ = rc.Close()
-				continue
-			}
-			_ = rc.Close()
-			if jars, ok := data["jars"].([]any); ok {
-				for _, entry := range jars {
-					if emap, ok := entry.(map[string]any); ok {
-						if id, ok := emap["id"].(string); ok {
-							if version, ok := emap["version"].(string); ok {
-								mods = append(mods, Mod{
-									ID:      id,
-									Version: version,
-								})
-							}
-						}
-					}
-				}
-			}
-		}
-	}
-	return mods, nil
 }
 
 func rangeToCompat(compat string) string {
@@ -368,54 +336,173 @@ func rangeToCompat(compat string) string {
 }
 
 // Extract metadata from a jar path
-func extractModMetadata(jarPath string) *ModMetadata {
+func extractModMetadata(path string, r *zip.Reader) (ModMetadata, error) {
+	log.Debugf("Extracting mod metadata from %s", path)
+	var err error
+	var meta ModMetadata
+	for _, f := range r.File {
+		err = nil
+		switch f.Name {
+		// Fabric
+		case "fabric.mod.json":
+			meta, err = getFabricMetadata(f)
+		// Forge modern
+		case "META-INF/mods.toml":
+			meta, err = getForgeMetadata(r, f)
+		// Forge old mcmod.info
+		case "mcmod.info":
+			meta, err = getOldForgeMetadata(f)
+		default:
+			continue
+		}
+
+		if err != nil {
+			log.WithError(err).Error("Error extracting metadata from %s", f.Name)
+			continue
+		}
+	}
+	meta.Path = path
+	return meta, err
+}
+
+func getModJarsFromBytes(name string, jarBytes []byte) map[string]*zip.Reader {
+	r, err := zip.NewReader(bytes.NewReader(jarBytes), int64(len(jarBytes)))
+	if err != nil {
+		return nil
+	}
+	// Collect embedded jars
+	var jars map[string]*zip.Reader
+	for _, f := range r.File {
+		if strings.HasSuffix(f.Name, ".jar") {
+			rc, err := f.Open()
+			if err != nil {
+				log.WithError(err).Error("Error opening jar file")
+				continue
+			}
+			data, err := io.ReadAll(rc)
+			_ = rc.Close()
+			if err != nil {
+				log.WithError(err).Error("Error reading jar file")
+				continue
+			}
+			embeddedJars := getModJarsFromBytes(f.Name, data)
+			for k, v := range embeddedJars {
+				if jars == nil {
+					jars = make(map[string]*zip.Reader)
+				}
+				jars[k] = v
+			}
+		}
+	}
+	if jars == nil {
+		jars = make(map[string]*zip.Reader)
+	}
+	jars[name] = r
+	return jars
+}
+
+func getModJars(jarPath string) map[string]*zip.Reader {
 	data, err := os.ReadFile(jarPath)
 	if err != nil {
 		return nil
 	}
-	meta, err := extractMetadataFromBytes(data)
-	if err != nil {
-		log.Warnf("Failed to extract metadata from %s", jarPath)
-	}
-	if meta != nil {
-		meta.Path = jarPath
-	}
-	return meta
+	return getModJarsFromBytes(jarPath, data)
 }
 
 // Scan folder
-func scanModFolder(folder string) (map[string]*ModMetadata, error) {
-	mods := make(map[string]*ModMetadata)
+func scanModFolder(folder string) (*Graph, error) {
+	var jars map[string]*zip.Reader
 	err := filepath.WalkDir(folder, func(path string, d fs.DirEntry, err error) error {
 		if err != nil || d.IsDir() || !strings.HasSuffix(d.Name(), ".jar") {
 			return nil
 		}
-		info := extractModMetadata(path)
-		if info != nil && !shouldIgnore(info.ID) {
-			var filtered []Dep
-			for _, dep := range info.Depends {
-				if !shouldIgnore(dep.ID) {
-					filtered = append(filtered, dep)
-				}
+		modJars := getModJars(path)
+		for p, r := range modJars {
+			if jars == nil {
+				jars = make(map[string]*zip.Reader)
 			}
-			info.Depends = filtered
-			mods[info.ID] = info
+			jars[p] = r
 		}
 		return nil
 	})
 	if err != nil {
 		return nil, err
 	}
-	return mods, nil
+	log.Debugf("Found %d jars", len(jars))
+	mods := make(map[string]ModMetadata)
+	for path, r := range jars {
+		info, err := extractModMetadata(path, r)
+		if err != nil {
+			log.WithError(err).WithField("path", path).Error("Error extracting mod metadata")
+			continue
+		}
+		if !shouldIgnore(info.ID) && !strings.HasPrefix(info.Path, "META-INF") {
+			var filtered []Dep
+			for _, dep := range info.Depends {
+				if shouldIgnore(dep.ID) {
+					// embedded or ignored mod
+					continue
+				}
+				filtered = append(filtered, dep)
+			}
+			info.Depends = filtered
+			mods[info.ID] = info
+		}
+	}
+	log.Debugf("Extracted metadata for %d mods", len(mods))
+	// Filter embedded mods from dependencies
+	for k, mod := range mods {
+		var filtered []Dep
+		for _, dep := range mod.Depends {
+			if depMod, exists := mods[dep.ID]; exists && !strings.HasPrefix(depMod.Path, "META-INF") {
+				filtered = append(filtered, dep)
+			}
+		}
+		mod.Depends = filtered
+		mods[k] = mod
+	}
+	log.Debugf("Found %d mods", len(mods))
+	return generateDependencyGraph(mods)
 }
 
-// generateDependencyGraphSVG generates the dependency graph SVG
-func generateDependencyGraphSVG(ctx context.Context, mods map[string]*ModMetadata, options GraphOptions) ([]byte, error) {
-	g, err := graphviz.New(ctx)
-	if err != nil {
-		return nil, err
+func generateDependencyGraph(mods map[string]ModMetadata) (*Graph, error) {
+	graph := NewGraph()
+	embeddings := make(map[string]struct{})
+	nodes := make(map[string]Node)
+	for _, mod := range mods {
+		node := graph.AddNode(Node{
+			ID:    mod.ID,
+			Label: fmt.Sprintf("%s\n%s", mod.Name, mod.Version),
+		})
+		if strings.HasPrefix("META-INF", mod.Path) {
+			embeddings[mod.ID] = struct{}{}
+		}
+		nodes[mod.ID] = node
 	}
-	graph, err := g.Graph()
+	for _, mod := range mods {
+		for _, dep := range mod.Depends {
+			depNode, exists := nodes[dep.ID]
+			if !exists {
+				depNode = Node{
+					ID:    dep.ID,
+					Label: fmt.Sprintf("%s (missing)\nrequires: %s", dep.ID, dep.Compatibility),
+				}
+				if !dep.Required {
+					depNode.Color = "yellow"
+				} else {
+					depNode.Color = "red"
+				}
+				nodes[dep.ID] = graph.AddNode(depNode)
+			}
+			graph.AddEdgeFromIDs(mod.ID, dep.ID)
+		}
+	}
+	return graph, nil
+}
+
+func generateDependencyGraphSVG(ctx context.Context, modGraph *Graph, options GraphOptions) ([]byte, error) {
+
+	g, graph, err := modGraph.Graphviz(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -424,45 +511,6 @@ func generateDependencyGraphSVG(ctx context.Context, mods map[string]*ModMetadat
 		_ = g.Close()
 	}()
 
-	nodes := make(map[string]*graphviz.Node)
-	for _, mod := range mods {
-		node, err := graph.CreateNodeByName(fmt.Sprintf("%s\n%s", mod.Name, mod.Version))
-		if err != nil {
-			return nil, err
-		}
-		node.SetID(mod.ID)
-		node.SetShape(graphviz.BoxShape)
-		nodes[mod.ID] = node
-	}
-	for _, mod := range mods {
-		for _, dep := range mod.Depends {
-			depNode, exists := nodes[dep.ID]
-			if !exists {
-
-				if slices.ContainsFunc(mod.Embedded, func(m Mod) bool {
-					return m.ID == dep.ID
-				}) {
-					// Dependency is embedded within the mod jar, nothing to plot
-					continue
-				} else {
-					depNode, err = graph.CreateNodeByName(fmt.Sprintf("%s (missing)\nrequires: %s", dep.ID, dep.Compatibility))
-					if err != nil {
-						return nil, err
-					}
-					depNode.SetID(mod.ID)
-					depNode.SetShape(graphviz.BoxShape)
-					depNode.SetStyle(graphviz.FilledNodeStyle)
-					if !dep.Required {
-						depNode.SetFillColor("yellow")
-					} else {
-						depNode.SetFillColor("red")
-					}
-				}
-			}
-			_, err = graph.CreateEdgeByName(fmt.Sprintf("%s -> %s", mod.ID, dep.ID), nodes[mod.ID], depNode)
-
-		}
-	}
 	g.SetLayout(options.Layout.Graphviz())
 	var buf bytes.Buffer
 	if err = g.Render(ctx, graph, graphviz.SVG, &buf); err != nil {
