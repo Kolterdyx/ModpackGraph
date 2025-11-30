@@ -3,7 +3,6 @@ package app
 import (
 	"archive/zip"
 	"bytes"
-	"context"
 	"encoding/json"
 	"fmt"
 	"github.com/pelletier/go-toml/v2"
@@ -13,8 +12,6 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
-
-	"github.com/goccy/go-graphviz"
 )
 
 var ignoredMods = map[string]struct{}{
@@ -440,7 +437,7 @@ func getModJars(jarPath string) map[string]*zip.Reader {
 }
 
 // Scan folder
-func scanModFolder(folder string) (*Graph, error) {
+func scanModFolder(folder string, layout Layout) (*Graph, error) {
 	var jars map[string]*zip.Reader
 	err := filepath.WalkDir(folder, func(path string, d fs.DirEntry, err error) error {
 		if err != nil || d.IsDir() || !strings.HasSuffix(d.Name(), ".jar") {
@@ -468,7 +465,6 @@ func scanModFolder(folder string) (*Graph, error) {
 			continue
 		}
 		if strings.HasPrefix(info.Path, "META-INF") {
-			log.Warnf("Ignoring embedded mod %+v", info)
 			ignored[info.ID] = struct{}{}
 			continue
 		}
@@ -492,7 +488,6 @@ func scanModFolder(folder string) (*Graph, error) {
 		for _, dep := range mod.Depends {
 
 			if depMod, exists := mods[dep.ID]; (exists && strings.HasPrefix(depMod.Path, "META-INF")) || shouldIgnore(dep.ID, ignored) {
-				log.Warnf("Filtering embedded mod dependency %+v", dep)
 				continue
 			}
 			filtered = append(filtered, dep)
@@ -501,10 +496,10 @@ func scanModFolder(folder string) (*Graph, error) {
 		mods[k] = mod
 	}
 	log.Debugf("Found %d mods", len(mods))
-	return generateDependencyGraph(mods)
+	return generateDependencyGraph(mods, layout)
 }
 
-func generateDependencyGraph(mods map[string]ModMetadata) (*Graph, error) {
+func generateDependencyGraph(mods map[string]ModMetadata, layout Layout) (*Graph, error) {
 	graph := NewGraph()
 	embeddings := make(map[string]struct{})
 	nodes := make(map[string]Node)
@@ -514,7 +509,6 @@ func generateDependencyGraph(mods map[string]ModMetadata) (*Graph, error) {
 			Label: fmt.Sprintf("%s\n%s", mod.Name, mod.Version),
 		})
 		if strings.HasPrefix("META-INF", mod.Path) {
-			log.Warnf("Marking %s as embedded", mod.ID)
 			embeddings[mod.ID] = struct{}{}
 		}
 		nodes[mod.ID] = node
@@ -537,24 +531,6 @@ func generateDependencyGraph(mods map[string]ModMetadata) (*Graph, error) {
 			graph.AddEdgeFromIDs(mod.ID, dep.ID)
 		}
 	}
+	graph.Layout = layout
 	return graph, nil
-}
-
-func generateDependencyGraphSVG(ctx context.Context, modGraph *Graph, options GraphOptions) ([]byte, error) {
-
-	g, graph, err := modGraph.Graphviz(ctx)
-	if err != nil {
-		return nil, err
-	}
-	defer func() {
-		_ = graph.Close()
-		_ = g.Close()
-	}()
-
-	g.SetLayout(options.Layout.Graphviz())
-	var buf bytes.Buffer
-	if err = g.Render(ctx, graph, graphviz.SVG, &buf); err != nil {
-		return nil, err
-	}
-	return buf.Bytes(), nil
 }

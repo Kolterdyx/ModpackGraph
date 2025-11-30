@@ -1,14 +1,46 @@
 package app
 
 import (
+	"bytes"
 	"context"
 	"fmt"
 	"github.com/goccy/go-graphviz"
+	log "github.com/sirupsen/logrus"
 )
 
+type Layout graphviz.Layout
+
+var AllLayouts = []Layout{
+	Layout(graphviz.CIRCO),
+	Layout(graphviz.DOT),
+	Layout(graphviz.FDP),
+	Layout(graphviz.NEATO),
+	Layout(graphviz.NOP),
+	Layout(graphviz.NOP1),
+	Layout(graphviz.NOP2),
+	Layout(graphviz.OSAGE),
+	Layout(graphviz.PATCHWORK),
+	Layout(graphviz.SFDP),
+	Layout(graphviz.TWOPI),
+}
+
+func (l Layout) TSName() string {
+	return string(l)
+}
+
+func (l Layout) Graphviz() graphviz.Layout {
+	return graphviz.Layout(l)
+}
+
+type GraphGenerationOptions struct {
+	Path   string `json:"path,omitempty"`
+	Layout Layout `json:"layout,omitempty"`
+}
+
 type Graph struct {
-	Nodes []Node `json:"nodes"`
-	Edges []Edge `json:"links"`
+	Nodes  []Node `json:"nodes"`
+	Edges  []Edge `json:"links"`
+	Layout Layout `json:"layout,omitempty"`
 }
 
 type Node struct {
@@ -68,12 +100,19 @@ func (g *Graph) AddEdgeFromIDs(sourceID, targetID string) {
 	})
 }
 
-func (g *Graph) Graphviz(ctx context.Context) (*graphviz.Graphviz, *graphviz.Graph, error) {
+func (g *Graph) Graphviz(ctx context.Context) (string, error) {
 	gv, err := graphviz.New(ctx)
 	if err != nil {
-		return nil, nil, err
+		return "", err
 	}
-	graph, _ := gv.Graph()
+	graph, err := gv.Graph()
+	if err != nil {
+		return "", err
+	}
+	defer func() {
+		_ = graph.Close()
+		_ = gv.Close()
+	}()
 	nodeMap := make(map[string]*graphviz.Node)
 
 	for _, node := range g.Nodes {
@@ -91,10 +130,17 @@ func (g *Graph) Graphviz(ctx context.Context) (*graphviz.Graphviz, *graphviz.Gra
 		if sourceExists && targetExists {
 			gvEdge, err := graph.CreateEdgeByName(fmt.Sprintf("%s -> %s", edge.Source, edge.Target), sourceNode, targetNode)
 			if err != nil {
-				return nil, nil, err
+				return "", err
 			}
 			gvEdge.SetDir(graphviz.ForwardDir)
 		}
 	}
-	return gv, graph, nil
+
+	gv.SetLayout(g.Layout.Graphviz())
+	var buf bytes.Buffer
+	if err = gv.Render(ctx, graph, graphviz.SVG, &buf); err != nil {
+		return "", err
+	}
+	log.Debug("Generated SVG data")
+	return buf.String(), nil
 }

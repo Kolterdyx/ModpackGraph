@@ -13,14 +13,31 @@ export namespace app {
 	    sfdp = "sfdp",
 	    twopi = "twopi",
 	}
+	export interface Edge {
+	    source: string;
+	    target: string;
+	}
 	export interface FileFilter {
 	    displayName: string;
 	    pattern: string;
 	}
-	export interface GraphOptions {
+	export interface Node {
+	    id: string;
+	    color?: string;
+	    name?: string;
+	    val?: number;
+	    icon?: string;
+	}
+	export interface Graph {
+	    nodes: Node[];
+	    links: Edge[];
+	    layout?: Layout;
+	}
+	export interface GraphGenerationOptions {
 	    path?: string;
 	    layout?: Layout;
 	}
+	
 	export interface OpenDialogOptions {
 	    title?: string;
 	    defaultDirectory?: string;

@@ -2,8 +2,6 @@ package app
 
 import (
 	"context"
-	"encoding/json"
-	"github.com/goccy/go-graphviz"
 	log "github.com/sirupsen/logrus"
 	"github.com/wailsapp/wails/v2/pkg/runtime"
 )
@@ -44,56 +42,17 @@ func (a *App) OpenDirectoryDialog(options OpenDialogOptions) (string, error) {
 	})
 }
 
-type Layout graphviz.Layout
-
-var AllLayouts = []Layout{
-	Layout(graphviz.CIRCO),
-	Layout(graphviz.DOT),
-	Layout(graphviz.FDP),
-	Layout(graphviz.NEATO),
-	Layout(graphviz.NOP),
-	Layout(graphviz.NOP1),
-	Layout(graphviz.NOP2),
-	Layout(graphviz.OSAGE),
-	Layout(graphviz.PATCHWORK),
-	Layout(graphviz.SFDP),
-	Layout(graphviz.TWOPI),
+func (a *App) GenerateDependencyGraph(options GraphGenerationOptions) (*Graph, error) {
+	return scanModFolder(options.Path, options.Layout)
 }
 
-func (l Layout) TSName() string {
-	return string(l)
-}
+func (a *App) GenerateDependencyGraphSVG(modGraph *Graph) (string, error) {
 
-func (l Layout) Graphviz() graphviz.Layout {
-	return graphviz.Layout(l)
-}
-
-type GraphOptions struct {
-	Path   string `json:"path,omitempty"`
-	Layout Layout `json:"layout,omitempty"`
-}
-
-func (a *App) GenerateDependencyGraphJSON(options GraphOptions) (string, error) {
-	modData, err := scanModFolder(options.Path)
+	content, err := modGraph.Graphviz(a.ctx)
 	if err != nil {
+		log.Error("Failed to generate graphviz content: ", err)
 		return "", err
 	}
-	graphData, err := json.Marshal(modData)
-	return string(graphData), err
-}
-
-func (a *App) GenerateDependencyGraphSVG(options GraphOptions) (string, error) {
-	modData, err := scanModFolder(options.Path)
-	if err != nil {
-		return "", err
-	}
-	log.Debug("Scanned mod folder")
-	svgData, err := generateDependencyGraphSVG(a.ctx, modData, options)
-	if err != nil {
-		return "", err
-	}
-	log.Debug("Generated SVG data")
-	content := string(svgData)
 	// remove everything before <svg
 	svgIndex := -1
 	for i := 0; i < len(content)-4; i++ {

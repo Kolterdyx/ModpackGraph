@@ -12,12 +12,27 @@
         </form>
       }
     </div>
+    <p-button
+      label="Generate graph"
+      (onClick)="onGenerate()"
+    />
   </div>
   <div class="flex flex-col gap-3 w-3/4 max-h-full p-4">
-    <p-menubar [model]="items"/>
+    <p-select-button fluid [options]="items" [(ngModel)]="currentTab">
+      <ng-template #item let-item>
+        <i [class]="item?.icon"></i>
+        <p>{{ item.label }}</p>
+      </ng-template>
+    </p-select-button>
     @switch (currentTab) {
       @case ('graphviz') {
-        <app-svg-graph-tab class="w-full h-full" [graphOptions]="formGroup?.value"/>
+        <app-svg-graph-tab class="w-full h-full" [graphData]="graphData"/>
+      }
+      @case ('2Di') {
+        <app-interactive-two-tab class="w-full h-full" [graphData]="graphData"/>
+      }
+      @case ('3Di') {
+        <app-interactive-three-tab class="w-full h-full" [graphData]="graphData"/>
       }
     }
   </div>
