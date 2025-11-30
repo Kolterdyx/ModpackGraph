@@ -4,8 +4,9 @@
   "scripts": {
     "ng": "ng",
     "start": "ng serve",
-    "build": "ng build",
+    "build": "ng build --localize",
     "watch": "ng build --watch --configuration development",
+    "extract-i18n": " ng extract-i18n --output-path src/locale",
     "test": "ng test"
   },
   "prettier": {
@@ -28,6 +29,8 @@
     "@angular/forms": "^20.3.0",
     "@angular/platform-browser": "^20.3.0",
     "@angular/router": "^20.3.0",
+    "@ngx-translate/core": "^17.0.0",
+    "@ngx-translate/http-loader": "^17.0.0",
     "@primeuix/themes": "^1.2.5",
     "@tailwindcss/postcss": "^4.1.17",
     "3d-force-graph": "^1.79.0",
@@ -45,6 +48,7 @@
     "@angular/build": "^20.3.10",
     "@angular/cli": "^20.3.10",
     "@angular/compiler-cli": "^20.3.0",
+    "@angular/localize": "^20.3.14",
     "@types/culori": "^4.0.1",
     "@types/jasmine": "~5.1.0",
     "autoprefixer": "^10.4.22",

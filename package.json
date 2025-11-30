@@ -1,5 +1,5 @@
 {
   "scripts": {
-    "dev": "wails dev -nogorebuild -tags webkit2_41"
+    "dev": "wails dev -nogorebuild"
   }
 }

@@ -1,3 +1,5 @@
 export interface DisplayOptions {
-  showIcons: boolean;
+  showIcons?: boolean;
+  alphaDecay?: number;
+  velocityDecay?: number;
 }

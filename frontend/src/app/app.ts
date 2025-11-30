@@ -3,7 +3,6 @@ import { Toast } from 'primeng/toast';
 import { MessageService } from 'primeng/api';
 import { FormBuilder, FormControl, FormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
 import { DirectoryInput } from '@components/directory-input/directory-input';
-import { Select } from 'primeng/select';
 import { Form } from '@/app/models/form';
 import { SelectButton } from 'primeng/selectbutton';
 import { InteractiveTwoTab } from '@components/tabs/interactive-two-tab/interactive-two-tab';
@@ -16,6 +15,9 @@ import GraphGenerationOptions = app.GraphGenerationOptions;
 import Layout = app.Layout;
 import { ToggleButton } from 'primeng/togglebutton';
 import { DisplayOptions } from '@/app/models/display-options';
+import { Slider } from 'primeng/slider';
+import { ScrollPanel } from 'primeng/scrollpanel';
+import { BrowserOpenURL } from '@wailsjs/runtime';
 
 interface SelectValue {
   label: string;
@@ -30,13 +32,14 @@ interface SelectValue {
     Toast,
     ReactiveFormsModule,
     DirectoryInput,
-    Select,
     SelectButton,
     FormsModule,
     InteractiveTwoTab,
     InteractiveThreeTab,
     Button,
     ToggleButton,
+    Slider,
+    ScrollPanel,
   ],
   providers: [
     MessageService,
@@ -50,12 +53,12 @@ export class App {
   protected currentTab: string = '2Di';
   protected items: SelectValue[] = [
     {
-      label: '2D Interactive',
+      label: $localize`2D Interactive`,
       value: '2Di',
       icon: 'pi pi-stop',
     },
     {
-      label: '3D Interactive',
+      label: $localize`3D Interactive`,
       value: '3Di',
       icon: 'pi pi-box',
     }
@@ -65,6 +68,7 @@ export class App {
   protected displayOptions: DisplayOptions = {
     showIcons: true,
   };
+  protected displayForm?: FormGroup<Form<DisplayOptions>>;
 
   constructor(
     private readonly fb: FormBuilder,
@@ -77,6 +81,15 @@ export class App {
       path: new FormControl<string>('', [Validators.required]),
       layout: new FormControl<Layout>(Layout.fdp, [Validators.required]),
     })
+    this.displayForm = this.fb.group<Form<DisplayOptions>>({
+      showIcons: new FormControl<boolean>(true, [Validators.required]),
+      alphaDecay: new FormControl<number>(0.022, [Validators.required]),
+      velocityDecay: new FormControl<number>(0.4, [Validators.required]),
+    });
+    this.displayOptions = this.displayForm.value as DisplayOptions;
+    this.displayForm.valueChanges.subscribe(value => {
+      this.displayOptions = value as DisplayOptions;
+    });
   }
 
 
@@ -85,14 +98,17 @@ export class App {
     if (!graphOptions) {
       return;
     }
-    this.messageService.add({severity: 'info', summary: 'Generating graph', detail: `Generating graph...`});
+    this.messageService.add({severity: 'info', summary: $localize`Generating graph`, detail: $localize`Generating graph...`});
     try {
       this.graphData = await GenerateDependencyGraph(graphOptions as GraphGenerationOptions);
-      console.log(this.graphData);
-      this.messageService.add({severity: 'success', summary: 'Graph generated', detail: `Graph generated successfully.`});
+      this.messageService.add({severity: 'success', summary: $localize`Graph generated`, detail: $localize`Graph generated successfully.`});
     } catch (error) {
-      this.messageService.add({severity: 'error', summary: 'Something went wrong.', detail: `Error: ${error}`});
+      this.messageService.add({severity: 'error', summary: $localize`Something went wrong.`, detail: `Error: ${error}`});
       console.error("Error generating graph:", error);
     }
+  }
+
+  protected setLanguage(lang: string) {
+    window.location.href = `wails://wails/${lang}/`;
   }
 }

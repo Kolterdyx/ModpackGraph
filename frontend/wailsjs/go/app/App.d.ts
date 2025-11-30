@@ -4,6 +4,4 @@ import {app} from '../models';
 
 export function GenerateDependencyGraph(arg1:app.GraphGenerationOptions):Promise<app.Graph>;
 
-export function GenerateDependencyGraphSVG(arg1:app.Graph):Promise<string>;
-
 export function OpenDirectoryDialog(arg1:app.OpenDialogOptions):Promise<string>;

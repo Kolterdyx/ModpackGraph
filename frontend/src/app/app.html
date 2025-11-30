@@ -1,23 +1,38 @@
 <div class="flex flex-row max-h-screen h-screen w-full bg-neutral-900  p-8 gap-4">
-  <div class="w-1/4 flex flex-col gap-4">
-    <div class="flex flex-col gap-2 p-4 border border-neutral-700 rounded">
-      @if (formGroup) {
-        <form [formGroup]="formGroup" class="grid grid-cols-1 gap-2">
-          <app-directory-input
-            [control]="formGroup.get('path')"
-            placeholder="Select Mods Folder"
-          ></app-directory-input>
-        </form>
-      }
-      <p-button
-        label="Generate graph"
-        (onClick)="onGenerate()"
-      />
+  <p-scroll-panel class="w-1/4">
+    <div class="flex flex-col gap-4">
+      <div class="flex flex-col gap-4 p-4 border border-neutral-700 rounded">
+        <h3 i18n>Graph generation</h3>
+        @if (formGroup) {
+          <form [formGroup]="formGroup" class="grid grid-cols-1 gap-2">
+            <app-directory-input
+              [control]="formGroup.get('path')"
+              placeholder="Select Mods Folder"
+            ></app-directory-input>
+          </form>
+        }
+        <p-button
+          fluid
+          label="Generate"
+          (onClick)="onGenerate()"
+        />
+      </div>
+      <div class="flex flex-col gap-4 p-4 border border-neutral-700 rounded">
+        <h3 i18n>Display options</h3>
+        @if (displayForm) {
+          <form [formGroup]="displayForm" class="grid grid-cols-1 gap-2">
+            <p-toggle-button formControlName="showIcons" i18n-onLabel i18n-offLabel onLabel="Hide icons" offLabel="Show icons"/>
+            <label>Alpha decay: {{ displayOptions.alphaDecay }}</label>
+            <p-slider formControlName="alphaDecay" [min]="0" [max]="0.1" [step]="0.001"/>
+            <label>Velocity decay: {{ displayOptions.velocityDecay }}</label>
+            <p-slider formControlName="velocityDecay" [min]="0.01" [max]="1" [step]="0.01"/>
+          </form>
+        }
+      </div>
+      <p-button label="English" (onClick)="setLanguage('en')" class="w-full"/>
+      <p-button label="Spanish" (onClick)="setLanguage('es')" class="w-full"/>
     </div>
-    <div class="flex flex-col gap-2 p-4 border border-neutral-700 rounded">
-      <p-toggle-button [(ngModel)]="displayOptions.showIcons" onLabel="Hide icons" offLabel="Show icons"/>
-    </div>
-  </div>
+  </p-scroll-panel>
 
   <div class="flex flex-col gap-3 w-3/4 max-w-3/4 max-h-screen min-h-0 p-4 border border-neutral-700 rounded">
     <p-select-button fluid [options]="items" [(ngModel)]="currentTab">

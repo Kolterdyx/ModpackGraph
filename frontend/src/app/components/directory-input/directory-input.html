@@ -1,15 +1,17 @@
-<p-inputgroup>
+<p-inputgroup
+  [pTooltip]="value"
+  tooltipPosition="bottom"
+>
   <input pInputText
          #dirInput
          [value]="value"
          [placeholder]="placeholder"
-         [pTooltip]="value"
-         tooltipPosition="bottom"
-         class="col-span-full"
+         class="col-span-full cursor-pointer"
+         (click)="onSelectFolder()"
          readonly>
   <p-inputgroup-addon>
     <p-button
-      label="Select Folder"
+      icon="pi pi-folder-open"
       class="col-span-full"
       (onClick)="onSelectFolder()"
     />

@@ -56,6 +56,7 @@ export class InteractiveTwoTab implements OnInit {
 
   @Input() set options(displayOptions: DisplayOptions) {
     this.displayOptions = displayOptions;
+    console.log(displayOptions);
     this.regenerate$.next()
   }
 
@@ -81,6 +82,8 @@ export class InteractiveTwoTab implements OnInit {
           this.graph = new ForceGraph(this.graphElement.nativeElement)
             .width(rect.width)
             .height(rect.height)
+            .d3AlphaDecay(this.displayOptions?.alphaDecay ?? 0.0228)
+            .d3VelocityDecay(this.displayOptions?.velocityDecay ?? 0.4)
             .linkLabel('label')
             .linkWidth(1)
             .backgroundColor("#000")
@@ -89,7 +92,7 @@ export class InteractiveTwoTab implements OnInit {
             .linkDirectionalArrowLength(6)
 
           if (this.displayOptions?.showIcons) {
-            const size = 12;
+            const size = 10;
             this.graph
               .nodeCanvasObject((node: Node & NodeObject, ctx) => {
                 if (!node.id || !node.x || !node.y) {
