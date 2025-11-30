@@ -40,11 +40,15 @@ var ignoredMods = map[string]struct{}{
 	"java":                         {},
 }
 
-func shouldIgnore(modid string) bool {
+func shouldIgnore(modid string, ignored map[string]struct{}) bool {
 	if modid == "" {
 		return true
 	}
 	_, ok := ignoredMods[strings.ToLower(modid)]
+	if ok {
+		return true
+	}
+	_, ok = ignored[modid]
 	return ok
 }
 
@@ -215,7 +219,7 @@ func getForgeMetadata(r *zip.Reader, f *zip.File) (ModMetadata, error) {
 	}, nil
 }
 
-func getOldForgeMetadata(f *zip.File) (ModMetadata, error) {
+func getOldForgeMetadata(r *zip.Reader, f *zip.File) (ModMetadata, error) {
 	defer func() {
 		if r := recover(); r != nil {
 			log.Errorf("Recovered in getOldForgeMetadata: %v", r)
@@ -249,6 +253,30 @@ func getOldForgeMetadata(f *zip.File) (ModMetadata, error) {
 	version, ok := entry["version"].(string)
 	if !ok {
 		version = "<not specified>"
+	}
+	if version == "${version}" {
+		// extract from MANIFEST.MF
+		for _, mfFile := range r.File {
+			if mfFile.Name == "META-INF/MANIFEST.MF" {
+				rc, err := mfFile.Open()
+				if err != nil {
+					return ModMetadata{}, err
+				}
+				manifestData, _ := io.ReadAll(rc)
+				err = rc.Close()
+				if err != nil {
+					return ModMetadata{}, err
+				}
+				lines := strings.Split(string(manifestData), "\n")
+				for _, line := range lines {
+					if strings.HasPrefix(line, "Implementation-Version:") {
+						version = strings.TrimSpace(strings.TrimPrefix(line, "Implementation-Version:"))
+						break
+					}
+				}
+				break
+			}
+		}
 	}
 	if name == "" {
 		name = modID
@@ -351,7 +379,7 @@ func extractModMetadata(path string, r *zip.Reader) (ModMetadata, error) {
 			meta, err = getForgeMetadata(r, f)
 		// Forge old mcmod.info
 		case "mcmod.info":
-			meta, err = getOldForgeMetadata(f)
+			meta, err = getOldForgeMetadata(r, f)
 		default:
 			continue
 		}
@@ -359,6 +387,8 @@ func extractModMetadata(path string, r *zip.Reader) (ModMetadata, error) {
 		if err != nil {
 			log.WithError(err).Error("Error extracting metadata from %s", f.Name)
 			continue
+		} else {
+			break
 		}
 	}
 	meta.Path = path
@@ -429,6 +459,7 @@ func scanModFolder(folder string) (*Graph, error) {
 		return nil, err
 	}
 	log.Debugf("Found %d jars", len(jars))
+	ignored := make(map[string]struct{})
 	mods := make(map[string]ModMetadata)
 	for path, r := range jars {
 		info, err := extractModMetadata(path, r)
@@ -436,27 +467,35 @@ func scanModFolder(folder string) (*Graph, error) {
 			log.WithError(err).WithField("path", path).Error("Error extracting mod metadata")
 			continue
 		}
-		if !shouldIgnore(info.ID) && !strings.HasPrefix(info.Path, "META-INF") {
-			var filtered []Dep
-			for _, dep := range info.Depends {
-				if shouldIgnore(dep.ID) {
-					// embedded or ignored mod
-					continue
-				}
-				filtered = append(filtered, dep)
-			}
-			info.Depends = filtered
-			mods[info.ID] = info
+		if strings.HasPrefix(info.Path, "META-INF") {
+			log.Warnf("Ignoring embedded mod %+v", info)
+			ignored[info.ID] = struct{}{}
+			continue
 		}
+		if shouldIgnore(info.ID, ignored) {
+			continue
+		}
+		var filtered []Dep
+		for _, dep := range info.Depends {
+			if shouldIgnore(dep.ID, ignored) {
+				continue
+			}
+			filtered = append(filtered, dep)
+		}
+		info.Depends = filtered
+		mods[info.ID] = info
 	}
 	log.Debugf("Extracted metadata for %d mods", len(mods))
 	// Filter embedded mods from dependencies
 	for k, mod := range mods {
 		var filtered []Dep
 		for _, dep := range mod.Depends {
-			if depMod, exists := mods[dep.ID]; exists && !strings.HasPrefix(depMod.Path, "META-INF") {
-				filtered = append(filtered, dep)
+
+			if depMod, exists := mods[dep.ID]; (exists && strings.HasPrefix(depMod.Path, "META-INF")) || shouldIgnore(dep.ID, ignored) {
+				log.Warnf("Filtering embedded mod dependency %+v", dep)
+				continue
 			}
+			filtered = append(filtered, dep)
 		}
 		mod.Depends = filtered
 		mods[k] = mod
@@ -475,6 +514,7 @@ func generateDependencyGraph(mods map[string]ModMetadata) (*Graph, error) {
 			Label: fmt.Sprintf("%s\n%s", mod.Name, mod.Version),
 		})
 		if strings.HasPrefix("META-INF", mod.Path) {
+			log.Warnf("Marking %s as embedded", mod.ID)
 			embeddings[mod.ID] = struct{}{}
 		}
 		nodes[mod.ID] = node

@@ -23,12 +23,6 @@ export class SVGViewer implements AfterViewInit, OnDestroy {
     // Destroy old panzoom instance
     this.panZoom?.destroy();
 
-    // Ensure the SVG has a viewBox
-    if (!svgEl.hasAttribute('viewBox')) {
-      const bbox = svgEl.getBBox();
-      svgEl.setAttribute('viewBox', `${bbox.x} ${bbox.y} ${bbox.width} ${bbox.height}`);
-    }
-
     // Match viewport to container
     this.setSvgViewportToContainer(svgEl);
 
@@ -81,15 +75,13 @@ export class SVGViewer implements AfterViewInit, OnDestroy {
   private setSvgViewportToContainer(svgEl: SVGSVGElement) {
     const container = this.svgContainer?.nativeElement;
     if (!container) return;
-    const w = container.clientWidth;
-    const h = container.clientHeight;
 
-    svgEl.setAttribute('width', `${w}`);
-    svgEl.setAttribute('height', `${h}`);
-    svgEl.style.width = w + 'px';
-    svgEl.style.height = h + 'px';
-
+    svgEl.setAttribute('width', `100%`);
+    svgEl.setAttribute('height', `100%`);
+    svgEl.setAttribute('preserveAspectRatio', `xMidYMid meet`);
     svgEl.setAttribute('preserveAspectRatio', 'xMidYMid meet');
+    svgEl.style.width = '100%';
+    svgEl.style.height = '100%';
   }
 
   private updateViewportSize() {

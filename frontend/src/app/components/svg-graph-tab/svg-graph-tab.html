@@ -1,0 +1,8 @@
+<div class="flex flex-col gap-3 max-h-full h-full">
+  <p-button
+    label="Generate graph"
+    class="col-span-full"
+    (onClick)="onGenerate()"
+  />
+  <app-svgviewer class="max-w-full max-h-full overflow-auto w-full h-full" [svgData]="svgData"/>
+</div>

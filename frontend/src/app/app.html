@@ -1,6 +1,6 @@
-<div class="flex flex-row h-full w-full bg-gray-900">
-  <div class="p-4 w-128 ">
-    <h2 class="col-span-full mb-4">Import Data</h2>
+<div class="flex flex-row max-h-screen h-screen w-full bg-neutral-900">
+  <div class="p-4 w-1/4">
+    <h2 class="mb-4">Import Data</h2>
     <div class="mb-4">
       @if (formGroup) {
         <form [formGroup]="formGroup" class="grid grid-cols-1 gap-2">
@@ -12,15 +12,14 @@
         </form>
       }
     </div>
-
-    <p-button
-      label="Generate graph"
-      class="col-span-full"
-      (onClick)="onGenerate()"
-    />
   </div>
-  <div class="max-w-full overflow-auto border border-gray-300 bg-black m-2 w-full">
-    <app-svgviewer [svgData]="svgData"/>
+  <div class="flex flex-col gap-3 w-3/4 max-h-full p-4">
+    <p-menubar [model]="items"/>
+    @switch (currentTab) {
+      @case ('graphviz') {
+        <app-svg-graph-tab class="w-full h-full" [graphOptions]="formGroup?.value"/>
+      }
+    }
   </div>
 </div>
 <p-toast/>

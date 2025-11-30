@@ -14,7 +14,7 @@ import (
 var assets embed.FS
 
 func main() {
-	log.SetLevel(log.DebugLevel)
+	log.SetLevel(log.WarnLevel)
 	// Create an instance of the app structure
 	app := app2.NewApp()
 
