@@ -2,7 +2,6 @@ package app
 
 import (
 	"context"
-	log "github.com/sirupsen/logrus"
 	"github.com/wailsapp/wails/v2/pkg/runtime"
 )
 
@@ -43,26 +42,26 @@ func (a *App) OpenDirectoryDialog(options OpenDialogOptions) (string, error) {
 }
 
 func (a *App) GenerateDependencyGraph(options GraphGenerationOptions) (*Graph, error) {
-	return scanModFolder(options.Path, options.Layout)
+	return scanModFolder(options.Path)
 }
 
-func (a *App) GenerateDependencyGraphSVG(modGraph *Graph) (string, error) {
-
-	content, err := modGraph.Graphviz(a.ctx)
-	if err != nil {
-		log.Error("Failed to generate graphviz content: ", err)
-		return "", err
-	}
-	// remove everything before <svg
-	svgIndex := -1
-	for i := 0; i < len(content)-4; i++ {
-		if content[i:i+4] == "<svg" {
-			svgIndex = i
-			break
-		}
-	}
-	if svgIndex != -1 {
-		content = content[svgIndex:]
-	}
-	return content, nil
-}
+//func (a *App) GenerateDependencyGraphSVG(modGraph *Graph) (string, error) {
+//
+//	content, err := modGraph.Graphviz(a.ctx)
+//	if err != nil {
+//		log.Error("Failed to generate graphviz content: ", err)
+//		return "", err
+//	}
+//	// remove everything before <svg
+//	svgIndex := -1
+//	for i := 0; i < len(content)-4; i++ {
+//		if content[i:i+4] == "<svg" {
+//			svgIndex = i
+//			break
+//		}
+//	}
+//	if svgIndex != -1 {
+//		content = content[svgIndex:]
+//	}
+//	return content, nil
+//}

@@ -1,15 +1,14 @@
 import { Component, ElementRef, Input, OnInit, ViewChild } from '@angular/core';
 import { app } from '@wailsjs/go/models';
-import Graph = app.Graph;
 import { debounceTime, Subject } from 'rxjs';
 import ForceGraph3D, { ForceGraph3DInstance } from '3d-force-graph';
-import { ToggleButton } from 'primeng/togglebutton';
 import { FormsModule } from '@angular/forms';
+import { DisplayOptions } from '@/app/models/display-options';
+import Graph = app.Graph;
 
 @Component({
   selector: 'app-interactive-three-tab',
   imports: [
-    ToggleButton,
     FormsModule
   ],
   templateUrl: './interactive-three-tab.html',
@@ -33,68 +32,43 @@ export class InteractiveThreeTab implements OnInit {
 
   private data?: Graph;
 
-  protected showIcons: boolean = false;
+  @Input() set options(displayOptions: DisplayOptions) {
+    this.displayOptions = displayOptions;
+    this.regenerate$.next()
+  }
+
+  private displayOptions?: DisplayOptions;
+
+  private resizeObserver?: ResizeObserver;
+
 
   ngOnInit(): void {
+
+    this.resizeObserver = new ResizeObserver(() => {
+      if (this.graph) {
+        const rect = this.graphElement.nativeElement.getBoundingClientRect();
+        this.graph.width(rect.width).height(rect.height);
+      }
+    });
+
+    this.resizeObserver.observe(this.graphElement.nativeElement);
     this.regenerate$
       .pipe(debounceTime(500))
       .subscribe(() => {
-          this.graph = new ForceGraph3D(this.graphElement.nativeElement)
-            .linkLabel('label')
-            .linkWidth(1)
-            .backgroundColor("#000")
-            .linkVisibility(true)
-            .linkColor(() => "#727272")
-            .linkDirectionalArrowLength(6)
+        const rect = this.graphElement.nativeElement.getBoundingClientRect();
+        this.graph = new ForceGraph3D(this.graphElement.nativeElement)
+          .width(rect.width)
+          .height(rect.height)
+          .linkLabel('label')
+          .linkWidth(1)
+          .backgroundColor("#000")
+          .linkVisibility(true)
+          .linkColor(() => "#727272")
+          .linkDirectionalArrowLength(6)
 
-          // if (this.showIcons) {
-          //
-          //   this.graph
-          //     .nodeThreeObject((node: Node & NodeObject, ctx) => {
-          //       if (!node.id || !node.x || !node.y) {
-          //         return;
-          //       }
-          //       if (!node?.icon) {
-          //         if (!node?.name) {
-          //           return;
-          //         }
-          //         const label = node.name;
-          //         const fontSize = 2;
-          //         ctx.font = `${fontSize}px Sans-Serif`;
-          //         const textWidth = ctx.measureText(label).width;
-          //         const bckgDimensions = [textWidth, fontSize].map(n => n + fontSize * 0.3); // some padding
-          //
-          //         ctx.fillStyle = node?.color || 'white';
-          //         ctx.fillRect(node.x - bckgDimensions[0] / 2, node.y - bckgDimensions[1] / 2, bckgDimensions[0], bckgDimensions[1]);
-          //
-          //         ctx.textAlign = 'center';
-          //         ctx.textBaseline = 'middle';
-          //         ctx.fillStyle = 'black';
-          //         ctx.fillText(label, node.x, node.y);
-          //       } else {
-          //         const size = 12
-          //         const img = new Image();
-          //         img.src = node.icon
-          //         ctx.drawImage(img, node.x - size / 2, node.y - size / 2, size, size);
-          //       }
-          //     })
-          //     .nodePointerAreaPaint((node, color, ctx) => {
-          //       if (!node.id || !node.x || !node.y) {
-          //         return;
-          //       }
-          //       const size = 12;
-          //       ctx.fillStyle = color;
-          //       ctx.fillRect(node.x - size / 2, node.y - size / 2, size, size); // draw square as pointer trap
-          //     })
-          // }
+        this.graph.graphData(this.data ?? {nodes: [], links: []})
 
-          this.graph.graphData(this.data ?? {nodes: [], links: []})
-            .cooldownTicks(100)
-
-          this.graph.onEngineStop(()=> this.graph?.zoomToFit(400))
-        }
-      )
-
+      })
+    this.regenerate$.next()
   }
-
 }

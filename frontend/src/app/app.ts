@@ -4,17 +4,18 @@ import { MessageService } from 'primeng/api';
 import { FormBuilder, FormControl, FormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
 import { DirectoryInput } from '@components/directory-input/directory-input';
 import { Select } from 'primeng/select';
-import { SvgGraphTab } from '@components/tabs/svg-graph-tab/svg-graph-tab';
 import { Form } from '@/app/models/form';
 import { SelectButton } from 'primeng/selectbutton';
 import { InteractiveTwoTab } from '@components/tabs/interactive-two-tab/interactive-two-tab';
 import { InteractiveThreeTab } from '@components/tabs/interactive-three-tab/interactive-three-tab';
 import { GenerateDependencyGraph } from '@wailsjs/go/app/App';
 import { app } from '@wailsjs/go/models';
+import { Button } from 'primeng/button';
 import Graph = app.Graph;
 import GraphGenerationOptions = app.GraphGenerationOptions;
 import Layout = app.Layout;
-import { Button } from 'primeng/button';
+import { ToggleButton } from 'primeng/togglebutton';
+import { DisplayOptions } from '@/app/models/display-options';
 
 interface SelectValue {
   label: string;
@@ -30,12 +31,12 @@ interface SelectValue {
     ReactiveFormsModule,
     DirectoryInput,
     Select,
-    SvgGraphTab,
     SelectButton,
     FormsModule,
     InteractiveTwoTab,
     InteractiveThreeTab,
     Button,
+    ToggleButton,
   ],
   providers: [
     MessageService,
@@ -49,11 +50,6 @@ export class App {
   protected currentTab: string = '2Di';
   protected items: SelectValue[] = [
     {
-      label: 'Graphviz',
-      value: 'graphviz',
-      icon: 'pi pi-image',
-    },
-    {
       label: '2D Interactive',
       value: '2Di',
       icon: 'pi pi-stop',
@@ -65,6 +61,10 @@ export class App {
     }
   ];
   protected graphData?: Graph;
+
+  protected displayOptions: DisplayOptions = {
+    showIcons: true,
+  };
 
   constructor(
     private readonly fb: FormBuilder,

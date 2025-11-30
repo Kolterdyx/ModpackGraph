@@ -2,11 +2,11 @@ import { Component, ElementRef, Input, OnInit, ViewChild } from '@angular/core';
 import { app } from '@wailsjs/go/models';
 import ForceGraph, { NodeObject } from 'force-graph';
 import { debounceTime, Subject } from 'rxjs';
-import { ToggleButton } from 'primeng/togglebutton';
 import { FormsModule } from '@angular/forms';
 import { converter, parse } from 'culori';
 import Graph = app.Graph;
 import Node = app.Node;
+import { DisplayOptions } from '@/app/models/display-options';
 
 const toOklch = converter<'oklch'>('oklch');
 
@@ -21,7 +21,6 @@ function darker(color: string, amount: number = 0.1): string {
 @Component({
   selector: 'app-interactive-two-tab',
   imports: [
-    ToggleButton,
     FormsModule
   ],
   templateUrl: './interactive-two-tab.html',
@@ -53,16 +52,21 @@ export class InteractiveTwoTab implements OnInit {
 
   private data?: Graph;
 
-  protected showIcons: boolean = false;
-
   private resizeObserver?: ResizeObserver;
+
+  @Input() set options(displayOptions: DisplayOptions) {
+    this.displayOptions = displayOptions;
+    this.regenerate$.next()
+  }
+
+  private displayOptions?: DisplayOptions;
 
   constructor() {
   }
 
   ngOnInit(): void {
 
-    this.resizeObserver = new ResizeObserver((entries, observer) => {
+    this.resizeObserver = new ResizeObserver(() => {
       if (this.graph) {
         const rect = this.graphElement.nativeElement.getBoundingClientRect();
         this.graph.width(rect.width).height(rect.height);
@@ -84,7 +88,7 @@ export class InteractiveTwoTab implements OnInit {
             .linkColor(() => "#727272")
             .linkDirectionalArrowLength(6)
 
-          if (this.showIcons) {
+          if (this.displayOptions?.showIcons) {
             const size = 12;
             this.graph
               .nodeCanvasObject((node: Node & NodeObject, ctx) => {

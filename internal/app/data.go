@@ -6,6 +6,7 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"fmt"
+	"github.com/goccy/go-graphviz"
 	"github.com/pelletier/go-toml/v2"
 	log "github.com/sirupsen/logrus"
 	"io"
@@ -210,12 +211,18 @@ func getForgeMetadata(r *zip.Reader, f *zip.File) (ModMetadata, error) {
 	}
 
 	// Find icon file
-	// 1. Check "logoFile" field
+	// 1. Check "logoFile" field in mod entry
 	var iconPath string
 	if logoFile, ok := modEntry["logoFile"].(string); ok && logoFile != "" {
 		iconPath = logoFile
 	}
-	// 2. Check for common icon file names
+	// 2. Check "logoFile" field in tomlData
+	if iconPath == "" {
+		if logoFile, ok := tomlData["logoFile"].(string); ok && logoFile != "" {
+			iconPath = logoFile
+		}
+	}
+	// 3. Check for common icon file names
 	if iconPath == "" {
 		commonIconNames := []string{
 			"logo.png",
@@ -238,7 +245,7 @@ func getForgeMetadata(r *zip.Reader, f *zip.File) (ModMetadata, error) {
 			}
 		}
 	}
-	// 3. Find anything called icon.png, logo.png or pack.png
+	// 4. Find anything called icon.png, logo.png or pack.png
 	if iconPath == "" {
 		iconNames := []string{
 			"icon.png",
@@ -507,7 +514,7 @@ func getModJars(jarPath string) map[string]*zip.Reader {
 }
 
 // Scan folder
-func scanModFolder(folder string, layout Layout) (*Graph, error) {
+func scanModFolder(folder string) (*Graph, error) {
 	var jars map[string]*zip.Reader
 	err := filepath.WalkDir(folder, func(path string, d fs.DirEntry, err error) error {
 		if err != nil || d.IsDir() || !strings.HasSuffix(d.Name(), ".jar") {
@@ -528,10 +535,10 @@ func scanModFolder(folder string, layout Layout) (*Graph, error) {
 	log.Debugf("Found %d jars", len(jars))
 	ignored := make(map[string]struct{})
 	mods := make(map[string]ModMetadata)
-	for path, r := range jars {
-		info, err := extractModMetadata(path, r)
+	for jarPath, r := range jars {
+		info, err := extractModMetadata(jarPath, r)
 		if err != nil {
-			log.WithError(err).WithField("path", path).Error("Error extracting mod metadata")
+			log.WithError(err).WithField("path", jarPath).Error("Error extracting mod metadata")
 			continue
 		}
 		if strings.HasPrefix(info.Path, "META-INF") {
@@ -566,7 +573,7 @@ func scanModFolder(folder string, layout Layout) (*Graph, error) {
 		mods[k] = mod
 	}
 	log.Debugf("Found %d mods", len(mods))
-	return generateDependencyGraph(mods, layout)
+	return generateDependencyGraph(mods, Layout(graphviz.FDP))
 }
 
 func generateDependencyGraph(mods map[string]ModMetadata, layout Layout) (*Graph, error) {

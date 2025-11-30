@@ -1,23 +1,25 @@
-<div class="flex flex-row max-h-screen h-screen w-full bg-neutral-900">
-  <div class="p-4 w-1/4">
-    <h2 class="mb-4">Import Data</h2>
-    <div class="mb-4">
+<div class="flex flex-row max-h-screen h-screen w-full bg-neutral-900  p-8 gap-4">
+  <div class="w-1/4 flex flex-col gap-4">
+    <div class="flex flex-col gap-2 p-4 border border-neutral-700 rounded">
       @if (formGroup) {
         <form [formGroup]="formGroup" class="grid grid-cols-1 gap-2">
           <app-directory-input
             [control]="formGroup.get('path')"
             placeholder="Select Mods Folder"
           ></app-directory-input>
-          <p-select [options]="layoutOptions" formControlName="layout"/>
         </form>
       }
+      <p-button
+        label="Generate graph"
+        (onClick)="onGenerate()"
+      />
     </div>
-    <p-button
-      label="Generate graph"
-      (onClick)="onGenerate()"
-    />
+    <div class="flex flex-col gap-2 p-4 border border-neutral-700 rounded">
+      <p-toggle-button [(ngModel)]="displayOptions.showIcons" onLabel="Hide icons" offLabel="Show icons"/>
+    </div>
   </div>
-  <div class="flex flex-col gap-3 w-3/4 max-w-3/4 max-h-screen p-8 min-h-0">
+
+  <div class="flex flex-col gap-3 w-3/4 max-w-3/4 max-h-screen min-h-0 p-4 border border-neutral-700 rounded">
     <p-select-button fluid [options]="items" [(ngModel)]="currentTab">
       <ng-template #item let-item>
         <i [class]="item?.icon"></i>
@@ -25,14 +27,19 @@
       </ng-template>
     </p-select-button>
     @switch (currentTab) {
-      @case ('graphviz') {
-        <app-svg-graph-tab class="w-full h-full" [graphData]="graphData"/>
-      }
       @case ('2Di') {
-        <app-interactive-two-tab class="h-full w-full flex flex-col gap-2 min-h-0" [graphData]="graphData"/>
+        <app-interactive-two-tab
+          class="h-full w-full flex flex-col gap-2 min-h-0 border border-neutral-700"
+          [graphData]="graphData"
+          [options]="displayOptions"
+        />
       }
       @case ('3Di') {
-        <app-interactive-three-tab class="w-full h-full" [graphData]="graphData"/>
+        <app-interactive-three-tab
+          class="h-full w-full flex flex-col gap-2 min-h-0 border border-neutral-700"
+          [graphData]="graphData"
+          [options]="displayOptions"
+        />
       }
     }
   </div>
