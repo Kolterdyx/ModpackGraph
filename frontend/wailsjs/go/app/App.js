@@ -6,6 +6,6 @@ export function GenerateDependencyGraph(arg1) {
   return window['go']['app']['App']['GenerateDependencyGraph'](arg1);
 }
 
-export function OpenSelectFolderDialog(arg1, arg2) {
-  return window['go']['app']['App']['OpenSelectFolderDialog'](arg1, arg2);
+export function OpenDirectoryDialog(arg1) {
+  return window['go']['app']['App']['OpenDirectoryDialog'](arg1);
 }

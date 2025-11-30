@@ -8,6 +8,7 @@
             [control]="formGroup.get('path')"
             placeholder="Select Mods Folder"
           ></app-directory-input>
+          <p-select [options]="layoutOptions" formControlName="layout" />
         </form>
       }
     </div>

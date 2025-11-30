@@ -31,6 +31,9 @@ func main() {
 		Bind: []interface{}{
 			app,
 		},
+		EnumBind: []interface{}{
+			app2.AllLayouts,
+		},
 	})
 
 	if err != nil {

@@ -9,5 +9,10 @@
   "author": {
     "name": "Ciro García Belmonte",
     "email": "info@cirogarcia.dev"
+  },
+  "bindings": {
+    "ts_generation": {
+      "outputType": "interfaces"
+    }
   }
 }

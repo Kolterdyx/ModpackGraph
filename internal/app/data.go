@@ -64,7 +64,6 @@ func extractMetadataFromBytes(rawBytes []byte) (*ModMetadata, error) {
 	}
 
 	for _, f := range r.File {
-		log.Debugf("Checking file in jar: %s", f.Name)
 		var meta *ModMetadata
 		switch f.Name {
 		// Fabric
@@ -411,7 +410,7 @@ func scanModFolder(folder string) (map[string]*ModMetadata, error) {
 }
 
 // generateDependencyGraphSVG generates the dependency graph SVG
-func generateDependencyGraphSVG(ctx context.Context, mods map[string]*ModMetadata) ([]byte, error) {
+func generateDependencyGraphSVG(ctx context.Context, mods map[string]*ModMetadata, options GraphOptions) ([]byte, error) {
 	g, err := graphviz.New(ctx)
 	if err != nil {
 		return nil, err
@@ -464,7 +463,7 @@ func generateDependencyGraphSVG(ctx context.Context, mods map[string]*ModMetadat
 
 		}
 	}
-	g.SetLayout(graphviz.FDP)
+	g.SetLayout(options.Layout.Graphviz())
 	var buf bytes.Buffer
 	if err = g.Render(ctx, graph, graphviz.SVG, &buf); err != nil {
 		return nil, err

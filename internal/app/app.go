@@ -2,6 +2,7 @@ package app
 
 import (
 	"context"
+	"github.com/goccy/go-graphviz"
 	"github.com/wailsapp/wails/v2/pkg/runtime"
 )
 
@@ -18,19 +19,64 @@ func (a *App) Startup(ctx context.Context) {
 	a.ctx = ctx
 }
 
-func (a *App) OpenSelectFolderDialog(path, title string) (string, error) {
+type FileFilter struct {
+	DisplayName string `json:"displayName"`
+	Pattern     string `json:"pattern"`
+}
+
+type OpenDialogOptions struct {
+	Title                      string       `json:"title,omitempty"`
+	DefaultDirectory           string       `json:"defaultDirectory,omitempty"`
+	DefaultFilename            string       `json:"defaultFilename,omitempty"`
+	Filters                    []FileFilter `json:"filters,omitempty"`
+	ShowHiddenFiles            bool         `json:"showHiddenFiles,omitempty"`
+	CanCreateDirectories       bool         `json:"canCreateDirectories,omitempty"`
+	ResolvesAliases            bool         `json:"resolvesAliases,omitempty"`
+	TreatPackagesAsDirectories bool         `json:"treatPackagesAsDirectories,omitempty"`
+}
+
+func (a *App) OpenDirectoryDialog(options OpenDialogOptions) (string, error) {
 	return runtime.OpenDirectoryDialog(a.ctx, runtime.OpenDialogOptions{
-		Title:            title,
-		DefaultDirectory: path,
+		Title:            options.Title,
+		DefaultDirectory: options.DefaultDirectory,
 	})
 }
 
-func (a *App) GenerateDependencyGraph(path string) (string, error) {
-	modData, err := scanModFolder(path)
+type Layout graphviz.Layout
+
+var AllLayouts = []Layout{
+	Layout(graphviz.CIRCO),
+	Layout(graphviz.DOT),
+	Layout(graphviz.FDP),
+	Layout(graphviz.NEATO),
+	Layout(graphviz.NOP),
+	Layout(graphviz.NOP1),
+	Layout(graphviz.NOP2),
+	Layout(graphviz.OSAGE),
+	Layout(graphviz.PATCHWORK),
+	Layout(graphviz.SFDP),
+	Layout(graphviz.TWOPI),
+}
+
+func (l Layout) TSName() string {
+	return string(l)
+}
+
+func (l Layout) Graphviz() graphviz.Layout {
+	return graphviz.Layout(l)
+}
+
+type GraphOptions struct {
+	Path   string `json:"path"`
+	Layout Layout `json:"layout"`
+}
+
+func (a *App) GenerateDependencyGraph(options GraphOptions) (string, error) {
+	modData, err := scanModFolder(options.Path)
 	if err != nil {
 		return "", err
 	}
-	svgData, err := generateDependencyGraphSVG(a.ctx, modData)
+	svgData, err := generateDependencyGraphSVG(a.ctx, modData, options)
 	if err != nil {
 		return "", err
 	}

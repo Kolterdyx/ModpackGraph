@@ -4,7 +4,7 @@ import { AbstractControl, FormsModule, ReactiveFormsModule } from "@angular/form
 import { InputGroup } from "primeng/inputgroup";
 import { InputGroupAddon } from "primeng/inputgroupaddon";
 import { InputText } from "primeng/inputtext";
-import { OpenSelectFolderDialog } from '@wailsjs/go/app/App';
+import { OpenDirectoryDialog } from '@wailsjs/go/app/App';
 import { Tooltip } from 'primeng/tooltip';
 
 @Component({
@@ -40,7 +40,10 @@ export class DirectoryInput implements OnInit {
 
   protected async onSelectFolder() {
     try {
-      this.value = await OpenSelectFolderDialog(this.control?.getRawValue(), this.title);
+      this.value = await OpenDirectoryDialog({
+        title: this.title,
+        defaultDirectory: this.control?.getRawValue(),
+      });
       if (this.value) {
         this.control?.setValue(this.value);
         this.folderSelected.emit(this.value);
