@@ -1,5 +1,6 @@
 import { Component, ElementRef, Input, OnInit, ViewChild } from '@angular/core';
-import { app } from '@wailsjs/go/models';
+import * as models from '@wailsjs/go/models';
+import app = models.app
 import ForceGraph, { LinkObject, NodeObject } from 'force-graph';
 import { debounceTime, Subject } from 'rxjs';
 import { FormsModule } from '@angular/forms';

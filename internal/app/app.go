@@ -3,6 +3,7 @@ package app
 import (
 	"context"
 	"fmt"
+
 	"github.com/wailsapp/wails/v2/pkg/menu"
 	"github.com/wailsapp/wails/v2/pkg/runtime"
 )
@@ -21,6 +22,7 @@ func NewApp(config Config) *App {
 
 func (a *App) Startup(ctx context.Context) {
 	a.ctx = ctx
+	loadDefaultIconData()
 }
 
 type FileFilter struct {
@@ -93,7 +95,7 @@ GitHub: https://github.com/Kolterdyx`,
 //
 //	content, err := modGraph.Graphviz(a.ctx)
 //	if err != nil {
-//		log.Error("Failed to generate graphviz content: ", err)
+//		//log.Error("Failed to generate graphviz content: ", err)
 //		return "", err
 //	}
 //	// remove everything before <svg

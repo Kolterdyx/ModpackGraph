@@ -8,15 +8,14 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"fmt"
-	"github.com/goccy/go-graphviz"
-	"github.com/pelletier/go-toml/v2"
-	log "github.com/sirupsen/logrus"
 	"io"
 	"io/fs"
 	"os"
 	"path"
 	"path/filepath"
 	"strings"
+
+	"github.com/pelletier/go-toml/v2"
 )
 
 //go:embed pack.png
@@ -59,19 +58,19 @@ func shouldIgnore(modid string, ignored map[string]struct{}) bool {
 
 var defaultIconData string
 
-func init() {
+func loadDefaultIconData() {
 	defaultIconFile, err := defaultIconFS.Open("pack.png")
 	if err == nil {
 		iconBytes, err := io.ReadAll(defaultIconFile)
 		_ = defaultIconFile.Close()
 		if err == nil {
 			defaultIconData = "data:image/png;base64," + base64.StdEncoding.EncodeToString(iconBytes)
-			log.Infof("Detected default icon")
+			//log.Info("Default icon data loaded")
 		} else {
-			log.WithError(err).Warn("Detected default icon")
+			//log.WithError(err).Warn("Detected default icon")
 		}
 	} else {
-		log.WithError(err).Warn("Detected default icon")
+		//log.WithError(err).Warn("Detected default icon")
 	}
 }
 
@@ -97,7 +96,7 @@ type Dep struct {
 func getFabricMetadata(f *zip.File) (ModMetadata, error) {
 	defer func() {
 		if r := recover(); r != nil {
-			log.Errorf("Recovered in getFabricMetadata: %v", r)
+			//log.Errorf("Recovered in getFabricMetadata: %v", r)
 		}
 	}()
 	rc, err := f.Open()
@@ -193,7 +192,7 @@ func getFabricMetadata(f *zip.File) (ModMetadata, error) {
 func getForgeMetadata(r *zip.Reader, f *zip.File) (ModMetadata, error) {
 	defer func() {
 		if r := recover(); r != nil {
-			log.Errorf("Recovered in getForgeMetadata: %v", r)
+			//log.Errorf("Recovered in getForgeMetadata: %v", r)
 		}
 	}()
 	rc, err := f.Open()
@@ -373,7 +372,7 @@ func getForgeMetadata(r *zip.Reader, f *zip.File) (ModMetadata, error) {
 func getOldForgeMetadata(r *zip.Reader, f *zip.File) (ModMetadata, error) {
 	defer func() {
 		if r := recover(); r != nil {
-			log.Errorf("Recovered in getOldForgeMetadata: %v", r)
+			//log.Errorf("Recovered in getOldForgeMetadata: %v", r)
 		}
 	}()
 	rc, err := f.Open()
@@ -617,7 +616,7 @@ func extractModMetadata(path string, r *zip.Reader) (ModMetadata, error) {
 		}
 
 		if err != nil {
-			log.WithError(err).Error("Error extracting metadata from %s", f.Name)
+			//log.WithError(err).Error("Error extracting metadata from %s", f.Name)
 			continue
 		} else {
 			break
@@ -638,13 +637,13 @@ func getModJarsFromBytes(name string, jarBytes []byte) map[string]*zip.Reader {
 		if strings.HasSuffix(f.Name, ".jar") {
 			rc, err := f.Open()
 			if err != nil {
-				log.WithError(err).Error("Error opening jar file")
+				//log.WithError(err).Error("Error opening jar file")
 				continue
 			}
 			data, err := io.ReadAll(rc)
 			_ = rc.Close()
 			if err != nil {
-				log.WithError(err).Error("Error reading jar file")
+				//log.WithError(err).Error("Error reading jar file")
 				continue
 			}
 			embeddedJars := getModJarsFromBytes(f.Name, data)
@@ -690,13 +689,13 @@ func scanModFolder(folder string) (*Graph, error) {
 	if err != nil {
 		return nil, err
 	}
-	log.Debugf("Found %d jars", len(jars))
+	//log.Debugf("Found %d jars", len(jars))
 	ignored := make(map[string]struct{})
 	mods := make(map[string]ModMetadata)
 	for jarPath, r := range jars {
 		info, err := extractModMetadata(jarPath, r)
 		if err != nil {
-			log.WithError(err).WithField("path", jarPath).Error("Error extracting mod metadata")
+			//log.WithError(err).WithField("path", jarPath).Error("Error extracting mod metadata")
 			continue
 		}
 		if strings.HasPrefix(info.Path, "META-INF") {
@@ -716,7 +715,7 @@ func scanModFolder(folder string) (*Graph, error) {
 		info.Depends = filtered
 		mods[info.ID] = info
 	}
-	log.Debugf("Extracted metadata for %d mods", len(mods))
+	//log.Debugf("Extracted metadata for %d mods", len(mods))
 	// Filter embedded mods from dependencies
 	for k, mod := range mods {
 		var filtered []Dep
@@ -730,11 +729,11 @@ func scanModFolder(folder string) (*Graph, error) {
 		mod.Depends = filtered
 		mods[k] = mod
 	}
-	log.Debugf("Found %d mods", len(mods))
-	return generateDependencyGraph(mods, Layout(graphviz.FDP))
+	//log.Debugf("Found %d mods", len(mods))
+	return generateDependencyGraph(mods)
 }
 
-func generateDependencyGraph(mods map[string]ModMetadata, layout Layout) (*Graph, error) {
+func generateDependencyGraph(mods map[string]ModMetadata) (*Graph, error) {
 	graph := NewGraph()
 	embeddings := make(map[string]struct{})
 	nodes := make(map[string]*Node)
@@ -773,6 +772,5 @@ func generateDependencyGraph(mods map[string]ModMetadata, layout Layout) (*Graph
 			})
 		}
 	}
-	graph.Layout = layout
 	return graph, nil
 }

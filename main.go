@@ -5,17 +5,17 @@ import (
 	"bytes"
 	"embed"
 	"encoding/json"
-	log "github.com/sirupsen/logrus"
+	"io/fs"
+	"net/http"
+	"os"
+	"path"
+	"text/template"
+
 	"github.com/wailsapp/wails/v2"
 	"github.com/wailsapp/wails/v2/pkg/options"
 	"github.com/wailsapp/wails/v2/pkg/options/assetserver"
 	"github.com/wailsapp/wails/v2/pkg/options/linux"
 	"github.com/wailsapp/wails/v2/pkg/options/mac"
-	"github.com/wailsapp/wails/v2/pkg/options/windows"
-	"io/fs"
-	"net/http"
-	"path"
-	"text/template"
 )
 
 const DefaultUserLang = "en"
@@ -41,21 +41,31 @@ func NewAssetFS(root string) fs.FS {
 	}
 }
 
+func init() {
+	println("hello world")
+}
+
 func (c assetFS) Open(name string) (fs.File, error) {
 	return assets.Open(path.Join(c.root, name))
 }
 
-func init() {
-	log.SetLevel(log.DebugLevel)
-}
-
 func main() {
+
+	// setup logging to file
+	logFile, _ := os.OpenFile("log", os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
+	defer logFile.Close()
+	//log.SetOutput(logFile)
 	// Create an instance of the app structure
+	defer func() {
+		if r := recover(); r != nil {
+			//log.Fatal(r)
+		}
+	}()
 
 	var config app2.Config
 	err := json.Unmarshal(configJSON, &config)
 	if err != nil {
-		log.Fatalf("Failed to parse wails.json: %v", err)
+		//log.Fatalf("Failed to parse wails.json: %v", err)
 	}
 
 	app := app2.NewApp(config)
@@ -72,7 +82,7 @@ func main() {
 			Handler: http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 				if r.URL.Path == "/" {
 					language := r.Header.Get("Accept-Language")
-					log.Debugf("Detected language: %s", language)
+					//log.Debugf("Detected language: %s", language)
 					selectedLang := DefaultUserLang
 					for _, lang := range supportedLangs {
 						if len(language) >= 2 && language[0:2] == lang {
@@ -80,10 +90,10 @@ func main() {
 							break
 						}
 					}
-					log.Debugf("Selected language: %s", selectedLang)
+					//log.Debugf("Selected language: %s", selectedLang)
 					tmpl, err := template.New("language-index").Parse(languageIndexTMPL)
 					if err != nil {
-						log.Error("Failed to parse language index template: ", err)
+						//log.Error("Failed to parse language index template: ", err)
 						http.Error(w, "Internal Server Error", http.StatusInternalServerError)
 						return
 					}
@@ -95,7 +105,7 @@ func main() {
 					var buf bytes.Buffer
 					err = tmpl.Execute(&buf, data)
 					if err != nil {
-						log.Error("Failed to execute language index template: ", err)
+						//log.Error("Failed to execute language index template: ", err)
 						http.Error(w, "Internal Server Error", http.StatusInternalServerError)
 						return
 					}
@@ -112,21 +122,15 @@ func main() {
 		Bind: []any{
 			app,
 		},
-		Windows: &windows.Options{
-			WindowIsTranslucent: true,
-		},
 		Linux: &linux.Options{
 			WindowIsTranslucent: true,
 		},
 		Mac: &mac.Options{
 			WindowIsTranslucent: true,
 		},
-		EnumBind: []any{
-			app2.AllLayouts,
-		},
 	})
 
 	if err != nil {
-		log.Fatalf("Error: %v", err.Error())
+		//log.Fatalf("Error: %v", err.Error())
 	}
 }

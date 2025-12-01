@@ -8,7 +8,8 @@ import { SelectButton } from 'primeng/selectbutton';
 import { InteractiveTwoTab } from '@components/tabs/interactive-two-tab/interactive-two-tab';
 import { InteractiveThreeTab } from '@components/tabs/interactive-three-tab/interactive-three-tab';
 import { GenerateDependencyGraph } from '@wailsjs/go/app/App';
-import { app } from '@wailsjs/go/models';
+import * as models from '@wailsjs/go/models';
+import app = models.app
 import { Button } from 'primeng/button';
 import { GraphDisplayOptions, ListDisplayOptions } from '@/app/models/graph-display-options';
 import { ScrollPanel } from 'primeng/scrollpanel';
@@ -16,7 +17,6 @@ import { LanguageService } from '@services/language-service';
 import { Select } from 'primeng/select';
 import Graph = app.Graph;
 import GraphGenerationOptions = app.GraphGenerationOptions;
-import Layout = app.Layout;
 import { ListTab } from '@components/tabs/list-tab/list-tab';
 import { ToggleSwitch } from 'primeng/toggleswitch';
 
@@ -102,12 +102,8 @@ export class App {
     private readonly langService: LanguageService,
   ) {
     this.currentLanguage = this.langService.getCurrentLanguage();
-    for (let l in Layout) {
-      this.layoutOptions.push(l)
-    }
     this.formGroup = this.fb.group<Form<GraphGenerationOptions>>({
       path: new FormControl<string>('', [Validators.required]),
-      layout: new FormControl<Layout>(Layout.fdp, [Validators.required]),
     })
     this.graphDisplayForm = this.fb.group<Form<GraphDisplayOptions>>({
       showIcons: new FormControl<boolean>(true, [Validators.required]),

@@ -1,6 +1,7 @@
 import { Component, Input, OnChanges, OnInit } from '@angular/core';
-import { app } from '@wailsjs/go/models';
-import { GraphDisplayOptions, ListDisplayOptions } from '@/app/models/graph-display-options';
+import * as models from '@wailsjs/go/models';
+import app = models.app
+import { ListDisplayOptions } from '@/app/models/graph-display-options';
 import Graph = app.Graph;
 import { DataView } from 'primeng/dataview';
 import { ScrollPanel } from 'primeng/scrollpanel';

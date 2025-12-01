@@ -1,5 +1,6 @@
 import { Component, ElementRef, Input, OnInit, ViewChild } from '@angular/core';
-import { app } from '@wailsjs/go/models';
+import * as models from '@wailsjs/go/models';
+import app = models.app
 import { debounceTime, Subject } from 'rxjs';
 import ForceGraph3D, { ForceGraph3DInstance } from '3d-force-graph';
 import { FormsModule } from '@angular/forms';
