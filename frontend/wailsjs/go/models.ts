@@ -23,12 +23,6 @@ export namespace app {
 	    displayName: string;
 	    pattern: string;
 	}
-	export interface Node {
-	    id?: string | number;
-	    name?: string;
-	    icon?: string;
-	    present?: boolean;
-	}
 	export interface Graph {
 	    nodes: Node[];
 	    links: Edge[];
@@ -38,7 +32,14 @@ export namespace app {
 	    path?: string;
 	    layout?: Layout;
 	}
-	
+	export interface Node {
+	    id?: string | number;
+	    name?: string;
+	    icon?: string;
+	    present?: boolean;
+	    presentVersion?: string;
+	    requiredVersion?: string;
+	}
 	export interface OpenDialogOptions {
 	    title?: string;
 	    defaultDirectory?: string;

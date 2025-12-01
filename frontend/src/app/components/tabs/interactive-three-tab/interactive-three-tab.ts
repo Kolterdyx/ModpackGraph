@@ -91,13 +91,13 @@ export class InteractiveThreeTab implements OnInit {
           .linkVisibility(true)
           .linkColor((link: Pick<Edge, 'label' | 'required'> & LinkObject) => {
             const target = link.target as NodeObject
-            console.log(target.id, this.nodeMap[target?.id ?? ''], this.nodeMap)
             if (this.nodeMap[target?.id ?? '']?.present) {
               return "#727272";
             }
             return link.required ? "#ff0000" : "#ffcc00";
           })
           .linkDirectionalArrowLength(6)
+          .showNavInfo(false)
 
         if (this.displayOptions?.showIcons) {
           this.graph.nodeThreeObject((node: Pick<Node, 'id'> & NodeObject) => {
@@ -107,13 +107,15 @@ export class InteractiveThreeTab implements OnInit {
             }
             // Fallback to a simple sphere if no icon is found
             const sphereGeometry = new THREE.SphereGeometry(4);
-            const sphereMaterial = new THREE.MeshBasicMaterial({ color: 0xc67a13 });
+            const sphereMaterial = new THREE.MeshBasicMaterial({
+              color: 0xBFBF7F,
+              opacity: 0.7,
+              transparent: true,
+            });
             return new THREE.Mesh(sphereGeometry, sphereMaterial);
           });
         }
-
         this.graph.graphData(this.data ?? {nodes: [], links: []})
-
       })
     this.regenerate$.next()
   }

@@ -38,8 +38,11 @@ func (c assetFS) Open(name string) (fs.File, error) {
 	return assets.Open(path.Join(c.root, name))
 }
 
-func main() {
+func init() {
 	log.SetLevel(log.DebugLevel)
+}
+
+func main() {
 	// Create an instance of the app structure
 	app := app2.NewApp()
 

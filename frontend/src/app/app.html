@@ -56,6 +56,13 @@
       </ng-template>
     </p-select-button>
     @switch (currentTab) {
+      @case ('list') {
+        <app-list-tab
+          class="h-full w-full flex flex-col gap-2 min-h-0"
+          [graphData]="graphData"
+          [options]="displayOptions"
+        />
+      }
       @case ('2Di') {
         <app-interactive-two-tab
           class="h-full w-full flex flex-col gap-2 min-h-0 border border-neutral-700"

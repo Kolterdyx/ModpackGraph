@@ -3,6 +3,8 @@ package app
 import (
 	"archive/zip"
 	"bytes"
+	"embed"
+	_ "embed"
 	"encoding/base64"
 	"encoding/json"
 	"fmt"
@@ -16,6 +18,9 @@ import (
 	"path/filepath"
 	"strings"
 )
+
+//go:embed pack.png
+var defaultIconFS embed.FS
 
 var ignoredMods = map[string]struct{}{
 	"minecraft":                    {},
@@ -52,6 +57,24 @@ func shouldIgnore(modid string, ignored map[string]struct{}) bool {
 	return ok
 }
 
+var defaultIconData string
+
+func init() {
+	defaultIconFile, err := defaultIconFS.Open("pack.png")
+	if err == nil {
+		iconBytes, err := io.ReadAll(defaultIconFile)
+		_ = defaultIconFile.Close()
+		if err == nil {
+			defaultIconData = "data:image/png;base64," + base64.StdEncoding.EncodeToString(iconBytes)
+			log.Infof("Detected default icon")
+		} else {
+			log.WithError(err).Warn("Detected default icon")
+		}
+	} else {
+		log.WithError(err).Warn("Detected default icon")
+	}
+}
+
 type Mod struct {
 	ID      string `json:"id"`
 	Version string `json:"version"`
@@ -68,7 +91,7 @@ type ModMetadata struct {
 type Dep struct {
 	ID            string `json:"id"`
 	Required      bool   `json:"required"`
-	Compatibility string `json:"compatibility,omitempty"`
+	Compatibility Compat `json:"compatibility,omitempty"`
 }
 
 func getFabricMetadata(f *zip.File) (ModMetadata, error) {
@@ -102,9 +125,55 @@ func getFabricMetadata(f *zip.File) (ModMetadata, error) {
 		if val, ok := data[key].(map[string]any); ok {
 			required := key == "depends"
 			for k := range val {
+				v := fmt.Sprintf("%v", val[k])
+				var compat Compat
+				// parse version string. Format: "<=X.X.X", ">=X.X.X", "==X.X.X", "<X.X.X, >X.X.X"
+				if strings.Contains(v, ",") {
+					parts := strings.SplitN(v, ",", 2)
+					minPart := strings.TrimSpace(parts[0])
+					maxPart := strings.TrimSpace(parts[1])
+					if strings.HasPrefix(minPart, ">=") {
+						compat.minVersion = strings.TrimSpace(strings.TrimPrefix(minPart, ">="))
+						compat.includeMin = true
+					} else if strings.HasPrefix(minPart, ">") {
+						compat.minVersion = strings.TrimSpace(strings.TrimPrefix(minPart, ">"))
+						compat.includeMin = false
+					}
+					if strings.HasPrefix(maxPart, "<=") {
+						compat.maxVersion = strings.TrimSpace(strings.TrimPrefix(maxPart, "<="))
+						compat.includeMax = true
+					} else if strings.HasPrefix(maxPart, "<") {
+						compat.maxVersion = strings.TrimSpace(strings.TrimPrefix(maxPart, "<"))
+						compat.includeMax = false
+					}
+				} else {
+					if strings.HasPrefix(v, ">=") {
+						compat.minVersion = strings.TrimSpace(strings.TrimPrefix(v, ">="))
+						compat.includeMin = true
+					}
+					if strings.HasPrefix(v, ">") {
+						compat.minVersion = strings.TrimSpace(strings.TrimPrefix(v, ">"))
+						compat.includeMin = false
+					}
+					if strings.HasPrefix(v, "<=") {
+						compat.maxVersion = strings.TrimSpace(strings.TrimPrefix(v, "<="))
+						compat.includeMax = true
+					}
+					if strings.HasPrefix(v, "<") {
+						compat.maxVersion = strings.TrimSpace(strings.TrimPrefix(v, "<"))
+						compat.includeMax = false
+					}
+					if strings.HasPrefix(v, "==") {
+						ver := strings.TrimSpace(strings.TrimPrefix(v, "=="))
+						compat.minVersion = ver
+						compat.maxVersion = ver
+						compat.includeMin = true
+						compat.includeMax = true
+					}
+				}
 				depends = append(depends, Dep{
 					ID:            k,
-					Compatibility: fmt.Sprintf("%v", val[k]),
+					Compatibility: compat,
 					Required:      required,
 				})
 			}
@@ -198,8 +267,12 @@ func getForgeMetadata(r *zip.Reader, f *zip.File) (ModMetadata, error) {
 					dm := d.(map[string]any)
 					depID, _ := dm["modId"].(string)
 					mandatory, _ := dm["mandatory"].(bool)
-					compat, _ := dm["versionRange"].(string)
-					compat = rangeToCompat(compat)
+					compatStr, _ := dm["versionRange"].(string)
+					var compat Compat
+					err := compat.UnmarshalText([]byte(compatStr))
+					if err != nil {
+						return ModMetadata{}, err
+					}
 					depends = append(depends, Dep{
 						ID:            depID,
 						Compatibility: compat,
@@ -280,6 +353,10 @@ func getForgeMetadata(r *zip.Reader, f *zip.File) (ModMetadata, error) {
 				break
 			}
 		}
+	}
+	if iconData == "" {
+		// Use default icon
+		iconData = defaultIconData
 	}
 
 	return ModMetadata{
@@ -392,9 +469,59 @@ func getOldForgeMetadata(r *zip.Reader, f *zip.File) (ModMetadata, error) {
 	}, nil
 }
 
-func rangeToCompat(compat string) string {
+type Compat struct {
+	minVersion string
+	maxVersion string
+	includeMin bool
+	includeMax bool
+}
+
+func (c *Compat) Intersect(other Compat) Compat {
+	var result Compat
+	// Determine min version
+	if c.minVersion == "" {
+		result.minVersion = other.minVersion
+		result.includeMin = other.includeMin
+	} else if other.minVersion == "" {
+		result.minVersion = c.minVersion
+		result.includeMin = c.includeMin
+	} else {
+		if c.minVersion > other.minVersion {
+			result.minVersion = c.minVersion
+			result.includeMin = c.includeMin
+		} else if c.minVersion < other.minVersion {
+			result.minVersion = other.minVersion
+			result.includeMin = other.includeMin
+		} else {
+			result.minVersion = c.minVersion
+			result.includeMin = c.includeMin && other.includeMin
+		}
+	}
+	// Determine max version
+	if c.maxVersion == "" {
+		result.maxVersion = other.maxVersion
+		result.includeMax = other.includeMax
+	} else if other.maxVersion == "" {
+		result.maxVersion = c.maxVersion
+		result.includeMax = c.includeMax
+	} else {
+		if c.maxVersion < other.maxVersion {
+			result.maxVersion = c.maxVersion
+			result.includeMax = c.includeMax
+		} else if c.maxVersion > other.maxVersion {
+			result.maxVersion = other.maxVersion
+			result.includeMax = other.includeMax
+		} else {
+			result.maxVersion = c.maxVersion
+			result.includeMax = c.includeMax && other.includeMax
+		}
+	}
+	return result
+}
+
+func (c *Compat) rangeToCompat(compat string) Compat {
 	if compat == "" {
-		return "not specified"
+		return Compat{}
 	}
 	var left, a, b, right string
 	if strings.HasPrefix(compat, "[") || strings.HasPrefix(compat, "(") {
@@ -413,28 +540,60 @@ func rangeToCompat(compat string) string {
 	} else {
 		a = strings.TrimSpace(parts[0])
 	}
-	// reconstruct using >=, <=, >, <
-	var result strings.Builder
+	var result Compat
 	if a != "" {
+		result.minVersion = a
 		if left == "[" {
-			result.WriteString(">=")
-		} else if left == "(" {
-			result.WriteString(">")
+			result.includeMin = true
 		}
-		result.WriteString(a)
 	}
 	if b != "" {
-		if result.Len() > 0 {
-			result.WriteString(" and ")
-		}
+		result.maxVersion = b
 		if right == "]" {
-			result.WriteString("<=")
-		} else if right == ")" {
-			result.WriteString("<")
+			result.includeMax = true
 		}
-		result.WriteString(b)
 	}
-	return result.String()
+	return result
+}
+
+func (c *Compat) String() string {
+	if c.minVersion == "" && c.maxVersion == "" {
+		return ""
+	}
+	var left, right string
+	if c.includeMin {
+		left = "["
+	} else {
+		left = "("
+	}
+	if c.includeMax {
+		right = "]"
+	} else {
+		right = ")"
+	}
+	if c.minVersion != "" && c.maxVersion != "" {
+		return fmt.Sprintf("%s%s, %s%s", left, c.minVersion, c.maxVersion, right)
+	} else if c.minVersion != "" {
+		return fmt.Sprintf("%s%s,%s", left, c.minVersion, right)
+	} else {
+		return fmt.Sprintf("%s,%s%s", left, c.maxVersion, right)
+	}
+}
+
+func (c *Compat) MarshalJSON() ([]byte, error) {
+	return json.Marshal(c.String())
+}
+
+func (c *Compat) UnmarshalJSON(data []byte) error {
+	return c.UnmarshalText(data)
+}
+
+func (c *Compat) UnmarshalText(text []byte) error {
+	if c == nil {
+		return fmt.Errorf("compat: UnmarshalText on nil pointer")
+	}
+	*c = c.rangeToCompat(string(text))
+	return nil
 }
 
 // Extract metadata from a jar path
@@ -578,13 +737,14 @@ func scanModFolder(folder string) (*Graph, error) {
 func generateDependencyGraph(mods map[string]ModMetadata, layout Layout) (*Graph, error) {
 	graph := NewGraph()
 	embeddings := make(map[string]struct{})
-	nodes := make(map[string]Node)
+	nodes := make(map[string]*Node)
 	for _, mod := range mods {
 		node := graph.AddNode(Node{
-			ID:      mod.ID,
-			Label:   fmt.Sprintf("%s %s", mod.Name, mod.Version),
-			Icon:    mod.IconData,
-			Present: true,
+			ID:             mod.ID,
+			Label:          mod.Name,
+			Icon:           mod.IconData,
+			Present:        true,
+			PresentVersion: mod.Version,
 		})
 		if strings.HasPrefix("META-INF", mod.Path) {
 			embeddings[mod.ID] = struct{}{}
@@ -595,14 +755,22 @@ func generateDependencyGraph(mods map[string]ModMetadata, layout Layout) (*Graph
 		for _, dep := range mod.Depends {
 			depNode, exists := nodes[dep.ID]
 			if !exists {
-				depNode = Node{
-					ID:      dep.ID,
-					Label:   fmt.Sprintf("%s", dep.ID),
-					Present: false,
-				}
-				nodes[dep.ID] = graph.AddNode(depNode)
+				depNode = graph.AddNode(Node{
+					ID:              dep.ID,
+					Label:           fmt.Sprintf("%s", dep.ID),
+					Present:         false,
+					RequiredVersion: dep.Compatibility,
+					Icon:            defaultIconData,
+				})
+				nodes[dep.ID] = depNode
 			}
-			graph.AddEdgeFromIDs(mod.ID, dep.ID, dep.Compatibility, dep.Required)
+			depNode.RequiredVersion = depNode.RequiredVersion.Intersect(dep.Compatibility)
+			graph.AddEdgeFromIDs(Edge{
+				Source:   mod.ID,
+				Target:   dep.ID,
+				Required: dep.Required,
+				Label:    dep.Compatibility.String(),
+			})
 		}
 	}
 	graph.Layout = layout

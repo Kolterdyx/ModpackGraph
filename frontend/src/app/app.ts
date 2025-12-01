@@ -19,6 +19,7 @@ import { Select } from 'primeng/select';
 import Graph = app.Graph;
 import GraphGenerationOptions = app.GraphGenerationOptions;
 import Layout = app.Layout;
+import { ListTab } from '@components/tabs/list-tab/list-tab';
 
 interface SelectValue {
   label: string;
@@ -42,6 +43,7 @@ interface SelectValue {
     Slider,
     ScrollPanel,
     Select,
+    ListTab,
   ],
   providers: [
     MessageService,
@@ -52,8 +54,13 @@ export class App {
 
   protected formGroup?: FormGroup<Form<GraphGenerationOptions>>;
   protected layoutOptions: string[] = [];
-  protected currentTab: string = '2Di';
+  protected currentTab: string = 'list';
   protected items: SelectValue[] = [
+    {
+      label: $localize`List View`,
+      value: 'list',
+      icon: 'pi pi-list',
+    },
     {
       label: $localize`2D Interactive`,
       value: '2Di',

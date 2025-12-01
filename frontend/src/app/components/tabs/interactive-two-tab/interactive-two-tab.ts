@@ -51,7 +51,6 @@ export class InteractiveTwoTab implements OnInit {
 
   @Input() set options(displayOptions: DisplayOptions) {
     this.displayOptions = displayOptions;
-    console.log(displayOptions);
     this.regenerate$.next()
   }
 
@@ -87,7 +86,6 @@ export class InteractiveTwoTab implements OnInit {
             .linkVisibility(true)
             .linkColor((link: Pick<Edge, 'label' | 'required'> & LinkObject) => {
               const target = link.target as NodeObject
-              console.log(target.id, this.nodeMap[target?.id ?? ''], this.nodeMap)
               if (this.nodeMap[target?.id ?? '']?.present) {
                 return "#727272";
               }

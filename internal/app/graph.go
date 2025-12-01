@@ -3,6 +3,7 @@ package app
 import (
 	"bytes"
 	"context"
+	"encoding/json"
 	"fmt"
 	"github.com/goccy/go-graphviz"
 	log "github.com/sirupsen/logrus"
@@ -38,16 +39,39 @@ type GraphGenerationOptions struct {
 }
 
 type Graph struct {
-	Nodes  []Node `json:"nodes"`
-	Edges  []Edge `json:"links"`
-	Layout Layout `json:"layout,omitempty"`
+	Nodes  map[string]*Node `json:"nodes" ts_type:"Node[]"`
+	Edges  map[string]*Edge `json:"links" ts_type:"Edge[]"`
+	Layout Layout           `json:"layout,omitempty"`
+}
+
+func (g *Graph) MarshalJSON() ([]byte, error) {
+	type Alias struct {
+		Nodes  []Node `json:"nodes" ts_type:"Node[]"`
+		Edges  []Edge `json:"links" ts_type:"Edge[]"`
+		Layout Layout `json:"layout,omitempty"`
+	}
+	nodes := make([]Node, 0, len(g.Nodes))
+	for _, node := range g.Nodes {
+		nodes = append(nodes, *node)
+	}
+	edges := make([]Edge, 0, len(g.Edges))
+	for _, edge := range g.Edges {
+		edges = append(edges, *edge)
+	}
+	return json.Marshal(&Alias{
+		Nodes:  nodes,
+		Edges:  edges,
+		Layout: g.Layout,
+	})
 }
 
 type Node struct {
-	ID      string `json:"id,omitempty" ts_type:"string | number"`
-	Label   string `json:"name,omitempty"`
-	Icon    string `json:"icon,omitempty"`
-	Present bool   `json:"present,omitempty"`
+	ID              string `json:"id,omitempty" ts_type:"string | number"`
+	Label           string `json:"name,omitempty"`
+	Icon            string `json:"icon,omitempty"`
+	Present         bool   `json:"present,omitempty"`
+	PresentVersion  string `json:"presentVersion,omitempty"`
+	RequiredVersion Compat `json:"requiredVersion,omitempty" ts_type:"string"`
 }
 
 type Edge struct {
@@ -59,24 +83,26 @@ type Edge struct {
 
 func NewGraph() *Graph {
 	return &Graph{
-		Nodes: make([]Node, 0),
-		Edges: make([]Edge, 0),
+		Nodes: make(map[string]*Node),
+		Edges: make(map[string]*Edge),
 	}
 }
 
-func (g *Graph) AddNode(node Node) Node {
-	g.Nodes = append(g.Nodes, node)
-	return node
+func (g *Graph) AddNode(node Node) *Node {
+	g.Nodes[node.ID] = &node
+	return g.Nodes[node.ID]
 }
 
-func (g *Graph) AddEdgeFromIDs(sourceID, targetID, label string, required bool) {
-	if sourceID == targetID {
+func (g *Graph) AddEdgeFromIDs(edge Edge) {
+	if edge.Source == "" || edge.Target == "" {
+		return
+	}
+	if edge.Source == edge.Target {
 		return
 	}
 	// Prevent duplicate edges
-	for _, edge := range g.Edges {
-		if (edge.Source == sourceID && edge.Target == targetID) ||
-			(edge.Source == targetID && edge.Target == sourceID) {
+	for _, e := range g.Edges {
+		if e.Source == edge.Source && e.Target == edge.Target {
 			return
 		}
 	}
@@ -84,10 +110,10 @@ func (g *Graph) AddEdgeFromIDs(sourceID, targetID, label string, required bool) 
 	sourceExists := false
 	targetExists := false
 	for _, node := range g.Nodes {
-		if node.ID == sourceID {
+		if node.ID == edge.Source {
 			sourceExists = true
 		}
-		if node.ID == targetID {
+		if node.ID == edge.Target {
 			targetExists = true
 		}
 	}
@@ -95,12 +121,7 @@ func (g *Graph) AddEdgeFromIDs(sourceID, targetID, label string, required bool) 
 		return
 	}
 	// Add the edge
-	g.Edges = append(g.Edges, Edge{
-		Source:   sourceID,
-		Target:   targetID,
-		Label:    label,
-		Required: required,
-	})
+	g.Edges[fmt.Sprintf("%s->%s", edge.Source, edge.Target)] = &edge
 }
 
 func (g *Graph) Graphviz(ctx context.Context) (string, error) {
@@ -145,4 +166,14 @@ func (g *Graph) Graphviz(ctx context.Context) (string, error) {
 	}
 	log.Debug("Generated SVG data")
 	return buf.String(), nil
+}
+
+func (g *Graph) GetNode(id string) (*Node, bool) {
+	node, exists := g.Nodes[id]
+	return node, exists
+}
+
+func (g *Graph) GetEdge(sourceID, targetID string) (*Edge, bool) {
+	edge, exists := g.Edges[fmt.Sprintf("%s->%s", sourceID, targetID)]
+	return edge, exists
 }

@@ -83,49 +83,57 @@
         <source>Generating graph</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/app.ts</context>
-          <context context-type="linenumber">117</context>
+          <context context-type="linenumber">118</context>
         </context-group>
       </trans-unit>
       <trans-unit id="7556049256956177156" datatype="html">
         <source>Generating graph...</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/app.ts</context>
-          <context context-type="linenumber">117</context>
+          <context context-type="linenumber">118</context>
         </context-group>
       </trans-unit>
       <trans-unit id="7960975128324978084" datatype="html">
         <source>Graph generated</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/app.ts</context>
-          <context context-type="linenumber">120</context>
+          <context context-type="linenumber">121</context>
         </context-group>
       </trans-unit>
       <trans-unit id="9129802106669787774" datatype="html">
         <source>Graph generated successfully.</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/app.ts</context>
-          <context context-type="linenumber">120</context>
+          <context context-type="linenumber">121</context>
         </context-group>
       </trans-unit>
       <trans-unit id="460799937634193265" datatype="html">
         <source>Something went wrong.</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/app.ts</context>
-          <context context-type="linenumber">122</context>
+          <context context-type="linenumber">123</context>
         </context-group>
       </trans-unit>
       <trans-unit id="4167530769438456521" datatype="html">
         <source>Required: <x id="PH" equiv-text="link.label"/></source>
         <context-group purpose="location">
+          <context context-type="sourcefile">src/app/components/tabs/interactive-three-tab/interactive-three-tab.ts</context>
+          <context context-type="linenumber">87</context>
+        </context-group>
+        <context-group purpose="location">
           <context context-type="sourcefile">src/app/components/tabs/interactive-two-tab/interactive-two-tab.ts</context>
-          <context context-type="linenumber">89</context>
+          <context context-type="linenumber">83</context>
         </context-group>
       </trans-unit>
       <trans-unit id="8322554591663562651" datatype="html">
         <source>Optional: <x id="PH" equiv-text="link.label"/></source>
         <context-group purpose="location">
+          <context context-type="sourcefile">src/app/components/tabs/interactive-three-tab/interactive-three-tab.ts</context>
+          <context context-type="linenumber">87</context>
+        </context-group>
+        <context-group purpose="location">
           <context context-type="sourcefile">src/app/components/tabs/interactive-two-tab/interactive-two-tab.ts</context>
-          <context context-type="linenumber">89</context>
+          <context context-type="linenumber">83</context>
         </context-group>
       </trans-unit>
     </body>
