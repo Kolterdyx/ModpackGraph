@@ -24,11 +24,11 @@
     "email": "info@cirogarcia.dev"
   },
   "Info": {
-    "companyName": "ModpackGraph",
+    "companyName": "Ciro García Belmonte",
     "productName": "ModpackGraph",
     "productVersion": "1.0.0",
-    "copyright": "Copyright.........",
-    "comments": "Built using Wails (https://wails.io)",
+    "copyright": "Copyright © 2025 Ciro García Belmonte",
+    "comments": "A tool to visualize mod dependencies in a Minecraft modpack.\nBuilt using Wails (https://wails.io).",
     "fileAssociations": null,
     "protocols": null
   },

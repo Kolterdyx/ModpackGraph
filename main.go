@@ -4,12 +4,12 @@ import (
 	app2 "ModpackGraph/internal/app"
 	"bytes"
 	"embed"
+	"encoding/json"
 	log "github.com/sirupsen/logrus"
 	"github.com/wailsapp/wails/v2"
 	"github.com/wailsapp/wails/v2/pkg/options"
 	"github.com/wailsapp/wails/v2/pkg/options/assetserver"
 	"github.com/wailsapp/wails/v2/pkg/options/linux"
-	"github.com/wailsapp/wails/v2/pkg/options/mac"
 	"github.com/wailsapp/wails/v2/pkg/options/windows"
 	"io/fs"
 	"net/http"
@@ -26,6 +26,9 @@ var assets embed.FS
 
 //go:embed language-index.gohtml
 var languageIndexTMPL string
+
+//go:embed wails.json
+var configJSON []byte
 
 type assetFS struct {
 	root string
@@ -47,12 +50,19 @@ func init() {
 
 func main() {
 	// Create an instance of the app structure
-	app := app2.NewApp()
+
+	var config app2.Config
+	err := json.Unmarshal(configJSON, &config)
+	if err != nil {
+		log.Fatalf("Failed to parse wails.json: %v", err)
+	}
+
+	app := app2.NewApp(config)
 
 	assetServer := http.FileServer(http.FS(NewAssetFS("frontend/dist/frontend/browser")))
 
 	// Create application with options
-	err := wails.Run(&options.App{
+	err = wails.Run(&options.App{
 		Title:  "ModpackGraph",
 		Width:  1024,
 		Height: 768,
@@ -97,6 +107,7 @@ func main() {
 		},
 		BackgroundColour: &options.RGBA{R: 0, G: 0, B: 0, A: 255},
 		OnStartup:        app.Startup,
+		Menu:             app.Menu(),
 		Bind: []any{
 			app,
 		},
@@ -104,9 +115,6 @@ func main() {
 			WindowIsTranslucent: true,
 		},
 		Linux: &linux.Options{
-			WindowIsTranslucent: true,
-		},
-		Mac: &mac.Options{
 			WindowIsTranslucent: true,
 		},
 		EnumBind: []any{

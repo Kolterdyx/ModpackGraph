@@ -53,3 +53,30 @@ export namespace app {
 
 }
 
+export namespace keys {
+	
+	export interface Accelerator {
+	    Key: string;
+	    Modifiers: string[];
+	}
+
+}
+
+export namespace menu {
+	
+	export interface MenuItem {
+	    Label: string;
+	    Role: number;
+	    Accelerator?: keys.Accelerator;
+	    Type: string;
+	    Disabled: boolean;
+	    Hidden: boolean;
+	    Checked: boolean;
+	    SubMenu?: Menu;
+	}
+	export interface Menu {
+	    Items: MenuItem[];
+	}
+
+}
+

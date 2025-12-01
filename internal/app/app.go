@@ -2,16 +2,21 @@ package app
 
 import (
 	"context"
+	"fmt"
+	"github.com/wailsapp/wails/v2/pkg/menu"
 	"github.com/wailsapp/wails/v2/pkg/runtime"
 )
 
 // App struct
 type App struct {
-	ctx context.Context
+	ctx    context.Context
+	config Config
 }
 
-func NewApp() *App {
-	return &App{}
+func NewApp(config Config) *App {
+	return &App{
+		config: config,
+	}
 }
 
 func (a *App) Startup(ctx context.Context) {
@@ -43,6 +48,45 @@ func (a *App) OpenDirectoryDialog(options OpenDialogOptions) (string, error) {
 
 func (a *App) GenerateDependencyGraph(options GraphGenerationOptions) (*Graph, error) {
 	return scanModFolder(options.Path)
+}
+
+func (a *App) Menu() *menu.Menu {
+	m := menu.NewMenu()
+
+	fileMenu := m.AddSubmenu("File")
+	fileMenu.AddText("Quit", nil, func(_ *menu.CallbackData) {
+		runtime.Quit(a.ctx)
+	})
+
+	aboutMenu := m.AddSubmenu("About")
+	aboutMenu.AddText("ModpackGraph", nil, func(_ *menu.CallbackData) {
+		runtime.MessageDialog(a.ctx, runtime.MessageDialogOptions{
+			Type:  runtime.InfoDialog,
+			Title: "About ModpackGraph",
+			Message: fmt.Sprintf(`ModpackGraph
+Version: %s
+%s
+GitHub: https://github.com/Kolterdyx/ModpackGraph
+%s
+License: MIT`,
+				a.config.Info.Version,
+				a.config.Info.Comments,
+				a.config.Info.Copyright,
+			),
+		})
+	})
+	aboutMenu.AddText("Author", nil, func(_ *menu.CallbackData) {
+		runtime.MessageDialog(a.ctx, runtime.MessageDialogOptions{
+			Type:  runtime.InfoDialog,
+			Title: "Author",
+			Message: fmt.Sprintf(
+				`Developed by %s
+GitHub: https://github.com/Kolterdyx`,
+				a.config.Author.Name,
+			),
+		})
+	})
+	return m
 }
 
 //func (a *App) GenerateDependencyGraphSVG(modGraph *Graph) (string, error) {

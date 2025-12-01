@@ -6,6 +6,10 @@ export function GenerateDependencyGraph(arg1) {
   return window['go']['app']['App']['GenerateDependencyGraph'](arg1);
 }
 
+export function Menu() {
+  return window['go']['app']['App']['Menu']();
+}
+
 export function OpenDirectoryDialog(arg1) {
   return window['go']['app']['App']['OpenDirectoryDialog'](arg1);
 }
