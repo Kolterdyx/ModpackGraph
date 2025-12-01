@@ -2,20 +2,20 @@
   <p-scroll-panel class="w-1/4">
     <div class="flex flex-col gap-4">
       <div class="flex flex-col gap-4 p-4 border border-neutral-700 rounded">
-        <h3 i18n>Graph generation</h3>
+        <h3 i18n>Modpack selection</h3>
         @if (formGroup) {
           <form [formGroup]="formGroup" class="grid grid-cols-1 gap-2">
             <app-directory-input
               [control]="formGroup.get('path')"
               i18n-placeholder
-              placeholder="Select Mods Folder"
+              placeholder="Select mods folder"
             ></app-directory-input>
           </form>
         }
         <p-button
           fluid
           i18n-label
-          label="Generate"
+          label="Process selected folder"
           (onClick)="onGenerate()"
         />
       </div>

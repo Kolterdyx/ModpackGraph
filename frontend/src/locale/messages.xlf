@@ -2,138 +2,173 @@
 <xliff version="1.2" xmlns="urn:oasis:names:tc:xliff:document:1.2">
   <file source-language="en" datatype="plaintext" original="ng2.template">
     <body>
-      <trans-unit id="7967364425510124569" datatype="html">
-        <source>Graph generation</source>
+      <trans-unit id="5324833194542170030" datatype="html">
+        <source>Modpack selection</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/app.html</context>
           <context context-type="linenumber">5,6</context>
         </context-group>
       </trans-unit>
-      <trans-unit id="7138541056651262041" datatype="html">
-        <source>Select Mods Folder</source>
+      <trans-unit id="7305209459049263324" datatype="html">
+        <source>Select mods folder</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/app.html</context>
           <context context-type="linenumber">11,12</context>
         </context-group>
       </trans-unit>
-      <trans-unit id="5193539160604294602" datatype="html">
-        <source>Generate</source>
+      <trans-unit id="5211344313626923071" datatype="html">
+        <source>Process selected folder</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/app.html</context>
           <context context-type="linenumber">18,19</context>
         </context-group>
       </trans-unit>
-      <trans-unit id="3391481216347816818" datatype="html">
-        <source>Display options</source>
+      <trans-unit id="8224840499457712510" datatype="html">
+        <source>Graph display options</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/app.html</context>
           <context context-type="linenumber">23,24</context>
         </context-group>
       </trans-unit>
-      <trans-unit id="4085473533203174091" datatype="html">
-        <source>Hide icons</source>
-        <context-group purpose="location">
-          <context context-type="sourcefile">src/app/app.html</context>
-          <context context-type="linenumber">26</context>
-        </context-group>
-      </trans-unit>
-      <trans-unit id="6411215741803717448" datatype="html">
-        <source>Show icons</source>
+      <trans-unit id="5908089622110794845" datatype="html">
+        <source>Show mod icons</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/app.html</context>
           <context context-type="linenumber">26,27</context>
         </context-group>
       </trans-unit>
-      <trans-unit id="6159282366511916592" datatype="html">
-        <source>Alpha decay: <x id="INTERPOLATION" equiv-text="{{ displayOptions.alphaDecay }}"/></source>
+      <trans-unit id="1074120317985020884" datatype="html">
+        <source>List display options</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/app.html</context>
-          <context context-type="linenumber">27,28</context>
+          <context context-type="linenumber">32,33</context>
         </context-group>
       </trans-unit>
-      <trans-unit id="3665471404336934029" datatype="html">
-        <source>Velocity decay: <x id="INTERPOLATION" equiv-text="{{ displayOptions.velocityDecay }}"/></source>
+      <trans-unit id="6882405256305741381" datatype="html">
+        <source>Show required mods</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/app.html</context>
-          <context context-type="linenumber">29,30</context>
+          <context context-type="linenumber">35,36</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="5092275673173462575" datatype="html">
+        <source>Show optional mods</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/app.html</context>
+          <context context-type="linenumber">37,38</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="6173843853615288373" datatype="html">
+        <source>Show installed mods</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/app.html</context>
+          <context context-type="linenumber">39,40</context>
         </context-group>
       </trans-unit>
       <trans-unit id="487077452159084336" datatype="html">
         <source>Select Language</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/app.html</context>
-          <context context-type="linenumber">34,35</context>
+          <context context-type="linenumber">45,46</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="7387382518119780362" datatype="html">
+        <source>List View</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/app.ts</context>
+          <context context-type="linenumber">58</context>
         </context-group>
       </trans-unit>
       <trans-unit id="4260072295906322588" datatype="html">
         <source>2D Interactive</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/app.ts</context>
-          <context context-type="linenumber">58</context>
+          <context context-type="linenumber">63</context>
         </context-group>
       </trans-unit>
       <trans-unit id="7565532077551931831" datatype="html">
         <source>3D Interactive</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/app.ts</context>
-          <context context-type="linenumber">63</context>
+          <context context-type="linenumber">68</context>
         </context-group>
       </trans-unit>
       <trans-unit id="2923549769256759439" datatype="html">
         <source>Generating graph</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/app.ts</context>
-          <context context-type="linenumber">118</context>
+          <context context-type="linenumber">136</context>
         </context-group>
       </trans-unit>
       <trans-unit id="7556049256956177156" datatype="html">
         <source>Generating graph...</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/app.ts</context>
-          <context context-type="linenumber">118</context>
+          <context context-type="linenumber">136</context>
         </context-group>
       </trans-unit>
       <trans-unit id="7960975128324978084" datatype="html">
         <source>Graph generated</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/app.ts</context>
-          <context context-type="linenumber">121</context>
+          <context context-type="linenumber">139</context>
         </context-group>
       </trans-unit>
       <trans-unit id="9129802106669787774" datatype="html">
         <source>Graph generated successfully.</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/app.ts</context>
-          <context context-type="linenumber">121</context>
+          <context context-type="linenumber">139</context>
         </context-group>
       </trans-unit>
       <trans-unit id="460799937634193265" datatype="html">
         <source>Something went wrong.</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/app.ts</context>
-          <context context-type="linenumber">123</context>
+          <context context-type="linenumber">141</context>
         </context-group>
       </trans-unit>
       <trans-unit id="4167530769438456521" datatype="html">
         <source>Required: <x id="PH" equiv-text="link.label"/></source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/components/tabs/interactive-three-tab/interactive-three-tab.ts</context>
-          <context context-type="linenumber">87</context>
+          <context context-type="linenumber">86</context>
         </context-group>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/components/tabs/interactive-two-tab/interactive-two-tab.ts</context>
-          <context context-type="linenumber">83</context>
+          <context context-type="linenumber">81</context>
         </context-group>
       </trans-unit>
       <trans-unit id="8322554591663562651" datatype="html">
         <source>Optional: <x id="PH" equiv-text="link.label"/></source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/components/tabs/interactive-three-tab/interactive-three-tab.ts</context>
-          <context context-type="linenumber">87</context>
+          <context context-type="linenumber">86</context>
         </context-group>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/components/tabs/interactive-two-tab/interactive-two-tab.ts</context>
-          <context context-type="linenumber">83</context>
+          <context context-type="linenumber">81</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="9015896454134824142" datatype="html">
+        <source>Version: <x id="INTERPOLATION" equiv-text="{{mod.presentVersion}}"/></source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/components/tabs/list-tab/list-tab.html</context>
+          <context context-type="linenumber">18</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="5714691469458385353" datatype="html">
+        <source>Requires: <x id="INTERPOLATION" equiv-text="{{mod.requiredVersion}}"/></source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/components/tabs/list-tab/list-tab.html</context>
+          <context context-type="linenumber">20</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="1330970253223665354" datatype="html">
+        <source>Optional: <x id="INTERPOLATION" equiv-text="{{mod.requiredVersion}}"/></source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/components/tabs/list-tab/list-tab.html</context>
+          <context context-type="linenumber">22</context>
         </context-group>
       </trans-unit>
     </body>

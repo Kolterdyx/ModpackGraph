@@ -1,95 +1,175 @@
-<?xml version="1.0" encoding="UTF-8" ?>
-<xliff version="1.2" xmlns="urn:oasis:names:tc:xliff:document:1.2">
-  <file source-language="es-ES" datatype="plaintext" original="ng2.template">
+<?xml version="1.0" encoding="UTF-8"?><xliff xmlns="urn:oasis:names:tc:xliff:document:1.2" version="1.2">
+  <file source-language="en" datatype="plaintext" original="ng2.template">
     <body>
-      <trans-unit id="7967364425510124569" datatype="html">
-        <source>Graph generation</source>
-        <target>Generación de gráficas</target>
+      <trans-unit datatype="html" id="5324833194542170030">
+        <source>Modpack selection</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/app.html</context>
-          <context context-type="linenumber">4,5</context>
+          <context context-type="linenumber">5,6</context>
         </context-group>
-      </trans-unit>
-      <trans-unit id="3391481216347816818" datatype="html">
-        <source>Display options</source>
-        <target>Opciones de visualización</target>
+      <target state="translated">Selección de modpack</target></trans-unit>
+      <trans-unit datatype="html" id="7305209459049263324">
+        <source>Select mods folder</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/app.html</context>
-          <context context-type="linenumber">20,21</context>
+          <context context-type="linenumber">11,12</context>
         </context-group>
-      </trans-unit>
-      <trans-unit id="4085473533203174091" datatype="html">
-        <source>Hide icons</source>
-        <target>Ocultar iconos</target>
+      <target state="translated">Seleccionar carpeta de mods</target></trans-unit>
+      <trans-unit datatype="html" id="5211344313626923071">
+        <source>Process selected folder</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/app.html</context>
-          <context context-type="linenumber">23</context>
+          <context context-type="linenumber">18,19</context>
         </context-group>
-      </trans-unit>
-      <trans-unit id="6411215741803717448" datatype="html">
-        <source>Show icons</source>
-        <target>Mostrar iconos</target>
+      <target state="translated">Procesar carpeta seleccionada</target></trans-unit>
+      <trans-unit datatype="html" id="8224840499457712510">
+        <source>Graph display options</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/app.html</context>
           <context context-type="linenumber">23,24</context>
         </context-group>
-      </trans-unit>
-      <trans-unit id="4260072295906322588" datatype="html">
+      <target state="translated">Opciones de visualización</target></trans-unit>
+      <trans-unit datatype="html" id="5908089622110794845">
+        <source>Show mod icons</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/app.html</context>
+          <context context-type="linenumber">26,27</context>
+        </context-group>
+      <target state="translated">Mostrar iconos</target></trans-unit>
+      <trans-unit datatype="html" id="1074120317985020884">
+        <source>List display options</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/app.html</context>
+          <context context-type="linenumber">32,33</context>
+        </context-group>
+      <target state="translated">Opciones de listado</target></trans-unit>
+      <trans-unit datatype="html" id="6882405256305741381">
+        <source>Show required mods</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/app.html</context>
+          <context context-type="linenumber">35,36</context>
+        </context-group>
+      <target state="translated">Mostrar mods obligatorios</target></trans-unit>
+      <trans-unit datatype="html" id="5092275673173462575">
+        <source>Show optional mods</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/app.html</context>
+          <context context-type="linenumber">37,38</context>
+        </context-group>
+      <target state="translated">Mostrar mods opcionales</target></trans-unit>
+      <trans-unit datatype="html" id="6173843853615288373">
+        <source>Show installed mods</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/app.html</context>
+          <context context-type="linenumber">39,40</context>
+        </context-group>
+      <target state="translated">Mostrar mods instalados</target></trans-unit>
+      <trans-unit datatype="html" id="487077452159084336">
+        <source>Select Language</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/app.html</context>
+          <context context-type="linenumber">45,46</context>
+        </context-group>
+      <target state="translated">Seleccionar idioma</target></trans-unit>
+      <trans-unit datatype="html" id="7387382518119780362">
+        <source>List View</source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/app.ts</context>
+          <context context-type="linenumber">58</context>
+        </context-group>
+      <target state="translated">Vista de lista</target></trans-unit>
+      <trans-unit datatype="html" id="4260072295906322588">
         <source>2D Interactive</source>
-        <target>2D Interactivo</target>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/app.ts</context>
-          <context context-type="linenumber">55</context>
+          <context context-type="linenumber">63</context>
         </context-group>
-      </trans-unit>
-      <trans-unit id="7565532077551931831" datatype="html">
+      <target state="translated">Visualización 2D</target></trans-unit>
+      <trans-unit datatype="html" id="7565532077551931831">
         <source>3D Interactive</source>
-        <target>3D Interactivo</target>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/app.ts</context>
-          <context context-type="linenumber">60</context>
+          <context context-type="linenumber">68</context>
         </context-group>
-      </trans-unit>
-      <trans-unit id="2923549769256759439" datatype="html">
+      <target state="translated">Visualización 3D</target></trans-unit>
+      <trans-unit datatype="html" id="2923549769256759439">
         <source>Generating graph</source>
-        <target>Generando gráfica</target>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/app.ts</context>
-          <context context-type="linenumber">100</context>
+          <context context-type="linenumber">136</context>
         </context-group>
-      </trans-unit>
-      <trans-unit id="7556049256956177156" datatype="html">
+      <target state="translated">Generando gráfica de dependencias</target></trans-unit>
+      <trans-unit datatype="html" id="7556049256956177156">
         <source>Generating graph...</source>
-        <target>Generando gráfica...</target>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/app.ts</context>
-          <context context-type="linenumber">100</context>
+          <context context-type="linenumber">136</context>
         </context-group>
-      </trans-unit>
-      <trans-unit id="7960975128324978084" datatype="html">
+      <target state="translated">Generando gráfica de dependencias</target></trans-unit>
+      <trans-unit datatype="html" id="7960975128324978084">
         <source>Graph generated</source>
-        <target>Gráfica generada</target>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/app.ts</context>
-          <context context-type="linenumber">103</context>
+          <context context-type="linenumber">139</context>
         </context-group>
-      </trans-unit>
-      <trans-unit id="9129802106669787774" datatype="html">
+      <target state="translated">Gráfica generada</target></trans-unit>
+      <trans-unit datatype="html" id="9129802106669787774">
         <source>Graph generated successfully.</source>
-        <target>Gráfica generada con éxito.</target>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/app.ts</context>
-          <context context-type="linenumber">103</context>
+          <context context-type="linenumber">139</context>
         </context-group>
-      </trans-unit>
-      <trans-unit id="460799937634193265" datatype="html">
+      <target state="translated">Gráfica generada correctamente</target></trans-unit>
+      <trans-unit datatype="html" id="460799937634193265">
         <source>Something went wrong.</source>
-        <target>Ha ocurrido un error.</target>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/app.ts</context>
-          <context context-type="linenumber">105</context>
+          <context context-type="linenumber">141</context>
         </context-group>
-      </trans-unit>
+      <target state="translated">Ha ocurrido un error.</target></trans-unit>
+      <trans-unit datatype="html" id="4167530769438456521">
+        <source>Required: <x equiv-text="link.label" id="PH"></x></source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/components/tabs/interactive-three-tab/interactive-three-tab.ts</context>
+          <context context-type="linenumber">86</context>
+        </context-group>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/components/tabs/interactive-two-tab/interactive-two-tab.ts</context>
+          <context context-type="linenumber">81</context>
+        </context-group>
+      <target state="translated">Obligatorio: <x equiv-text="link.label" id="PH"></x></target></trans-unit>
+      <trans-unit datatype="html" id="8322554591663562651">
+        <source>Optional: <x equiv-text="link.label" id="PH"></x></source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/components/tabs/interactive-three-tab/interactive-three-tab.ts</context>
+          <context context-type="linenumber">86</context>
+        </context-group>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/components/tabs/interactive-two-tab/interactive-two-tab.ts</context>
+          <context context-type="linenumber">81</context>
+        </context-group>
+      <target state="translated">Opcional: <x equiv-text="link.label" id="PH"></x></target></trans-unit>
+      <trans-unit datatype="html" id="9015896454134824142">
+        <source>Version: <x equiv-text="{{mod.presentVersion}}" id="INTERPOLATION"></x></source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/components/tabs/list-tab/list-tab.html</context>
+          <context context-type="linenumber">18</context>
+        </context-group>
+      <target state="translated">Versión: <x equiv-text="{{mod.presentVersion}}" id="INTERPOLATION"></x></target></trans-unit>
+      <trans-unit datatype="html" id="5714691469458385353">
+        <source>Requires: <x equiv-text="{{mod.requiredVersion}}" id="INTERPOLATION"></x></source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/components/tabs/list-tab/list-tab.html</context>
+          <context context-type="linenumber">20</context>
+        </context-group>
+      <target state="translated">Obligatorio: <x equiv-text="{{mod.requiredVersion}}" id="INTERPOLATION"></x></target></trans-unit>
+      <trans-unit datatype="html" id="1330970253223665354">
+        <source>Optional: <x equiv-text="{{mod.requiredVersion}}" id="INTERPOLATION"></x></source>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/components/tabs/list-tab/list-tab.html</context>
+          <context context-type="linenumber">22</context>
+        </context-group>
+      <target state="translated">Opcional: <x equiv-text="{{mod.requiredVersion}}" id="INTERPOLATION"></x></target></trans-unit>
     </body>
   </file>
 </xliff>
