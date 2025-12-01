@@ -22,7 +22,7 @@ jobs:
         id: linux_setup
         run: |
           sudo apt-get -yq update
-          sudo apt-get -yq install libgtk-3-0 libwebkit2gtk-4.1-dev gcc-aarch64-linux-gnu mingw-w64
+          sudo apt-get -yq install libgtk-3-0 libgtk-3-dev libwebkit2gtk-4.1-dev gcc-aarch64-linux-gnu mingw-w64 nsis
         shell: bash
 
       - name: Setup GoLang
