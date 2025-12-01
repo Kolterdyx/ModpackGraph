@@ -13,27 +13,11 @@ permissions:
 
 jobs:
   build:
-    strategy:
-    # Failure in one platform build won't impact the others
-      fail-fast: false
-      matrix:
-        build:
-          - name: 'modpackgraph'
-            platform:  'linux/amd64'
-            nsis: false
-            os: 'ubuntu-latest'
-          - name: 'modpackgraph'
-            platform:  'windows/amd64'
-            ext: .exe
-            nsis: true
-            os: 'windows-latest'
-
     runs-on: 'ubuntu-22.04'
     steps:
       - name: Checkout
         uses: actions/checkout@v4
       - name: Setup Linux
-        if: runner.os == 'Linux'
         id: linux_setup
         run: |
           sudo apt-get -yq update
