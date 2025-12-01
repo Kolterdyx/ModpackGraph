@@ -10,7 +10,7 @@ ModpackGraph is a tool designed to visualize and analyze the dependencies and re
 ## Installation
 
 You can download an installer or a portable version from the [Releases](https://github.com/Kolterdyx/ModpackGraph/releases/latest) page.
-Currently, only Windows and Linux are supported.
+Currently, only Windows and Linux are supported actively supported. MacOS versions are distributed but I can't test that they work properly.
 
 ## Usage
 
