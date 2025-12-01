@@ -44,18 +44,17 @@ type Graph struct {
 }
 
 type Node struct {
-	ID    string `json:"id,omitempty" ts_type:"string | number"`
-	Color string `json:"color,omitempty"`
-	Label string `json:"name,omitempty"`
-	Value int    `json:"val,omitempty"`
-	Icon  string `json:"icon,omitempty"`
+	ID      string `json:"id,omitempty" ts_type:"string | number"`
+	Label   string `json:"name,omitempty"`
+	Icon    string `json:"icon,omitempty"`
+	Present bool   `json:"present,omitempty"`
 }
 
 type Edge struct {
-	Source string `json:"source"`
-	Target string `json:"target"`
-	Label  string `json:"label,omitempty"`
-	Color  string `json:"color,omitempty"`
+	Source   string `json:"source"`
+	Target   string `json:"target"`
+	Label    string `json:"label,omitempty"`
+	Required bool   `json:"required,omitempty"`
 }
 
 func NewGraph() *Graph {
@@ -70,7 +69,7 @@ func (g *Graph) AddNode(node Node) Node {
 	return node
 }
 
-func (g *Graph) AddEdgeFromIDs(sourceID, targetID, label string) {
+func (g *Graph) AddEdgeFromIDs(sourceID, targetID, label string, required bool) {
 	if sourceID == targetID {
 		return
 	}
@@ -97,10 +96,10 @@ func (g *Graph) AddEdgeFromIDs(sourceID, targetID, label string) {
 	}
 	// Add the edge
 	g.Edges = append(g.Edges, Edge{
-		Source: sourceID,
-		Target: targetID,
-		Color:  "white",
-		Label:  label,
+		Source:   sourceID,
+		Target:   targetID,
+		Label:    label,
+		Required: required,
 	})
 }
 
@@ -124,7 +123,6 @@ func (g *Graph) Graphviz(ctx context.Context) (string, error) {
 		gvNode.SetLabel(node.Label)
 		gvNode.SetStyle(graphviz.FilledNodeStyle)
 		gvNode.SetShape(graphviz.BoxShape)
-		gvNode.SetFillColor(node.Color)
 		gvNode.SetID(node.ID)
 		nodeMap[node.ID] = gvNode
 	}

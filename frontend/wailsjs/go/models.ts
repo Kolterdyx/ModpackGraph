@@ -17,7 +17,7 @@ export namespace app {
 	    source: string;
 	    target: string;
 	    label?: string;
-	    color?: string;
+	    required?: boolean;
 	}
 	export interface FileFilter {
 	    displayName: string;
@@ -25,10 +25,9 @@ export namespace app {
 	}
 	export interface Node {
 	    id?: string | number;
-	    color?: string;
 	    name?: string;
-	    val?: number;
 	    icon?: string;
+	    present?: boolean;
 	}
 	export interface Graph {
 	    nodes: Node[];

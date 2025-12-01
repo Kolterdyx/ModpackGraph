@@ -439,7 +439,6 @@ func rangeToCompat(compat string) string {
 
 // Extract metadata from a jar path
 func extractModMetadata(path string, r *zip.Reader) (ModMetadata, error) {
-	log.Debugf("Extracting mod metadata from %s", path)
 	var err error
 	var meta ModMetadata
 	for _, f := range r.File {
@@ -582,9 +581,10 @@ func generateDependencyGraph(mods map[string]ModMetadata, layout Layout) (*Graph
 	nodes := make(map[string]Node)
 	for _, mod := range mods {
 		node := graph.AddNode(Node{
-			ID:    mod.ID,
-			Label: fmt.Sprintf("%s\n%s", mod.Name, mod.Version),
-			Icon:  mod.IconData,
+			ID:      mod.ID,
+			Label:   fmt.Sprintf("%s %s", mod.Name, mod.Version),
+			Icon:    mod.IconData,
+			Present: true,
 		})
 		if strings.HasPrefix("META-INF", mod.Path) {
 			embeddings[mod.ID] = struct{}{}
@@ -596,17 +596,13 @@ func generateDependencyGraph(mods map[string]ModMetadata, layout Layout) (*Graph
 			depNode, exists := nodes[dep.ID]
 			if !exists {
 				depNode = Node{
-					ID:    dep.ID,
-					Label: fmt.Sprintf("%s (missing)", dep.ID),
-				}
-				if !dep.Required {
-					depNode.Color = "yellow"
-				} else {
-					depNode.Color = "red"
+					ID:      dep.ID,
+					Label:   fmt.Sprintf("%s", dep.ID),
+					Present: false,
 				}
 				nodes[dep.ID] = graph.AddNode(depNode)
 			}
-			graph.AddEdgeFromIDs(mod.ID, dep.ID, fmt.Sprintf("requires: %s", dep.Compatibility))
+			graph.AddEdgeFromIDs(mod.ID, dep.ID, dep.Compatibility, dep.Required)
 		}
 	}
 	graph.Layout = layout

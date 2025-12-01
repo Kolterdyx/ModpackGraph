@@ -10,15 +10,15 @@ import { InteractiveThreeTab } from '@components/tabs/interactive-three-tab/inte
 import { GenerateDependencyGraph } from '@wailsjs/go/app/App';
 import { app } from '@wailsjs/go/models';
 import { Button } from 'primeng/button';
-import Graph = app.Graph;
-import GraphGenerationOptions = app.GraphGenerationOptions;
-import Layout = app.Layout;
 import { ToggleButton } from 'primeng/togglebutton';
 import { DisplayOptions } from '@/app/models/display-options';
 import { Slider } from 'primeng/slider';
 import { ScrollPanel } from 'primeng/scrollpanel';
-import { BrowserOpenURL } from '@wailsjs/runtime';
 import { LanguageService } from '@services/language-service';
+import { Select } from 'primeng/select';
+import Graph = app.Graph;
+import GraphGenerationOptions = app.GraphGenerationOptions;
+import Layout = app.Layout;
 
 interface SelectValue {
   label: string;
@@ -41,6 +41,7 @@ interface SelectValue {
     ToggleButton,
     Slider,
     ScrollPanel,
+    Select,
   ],
   providers: [
     MessageService,
@@ -70,12 +71,26 @@ export class App {
     showIcons: true,
   };
   protected displayForm?: FormGroup<Form<DisplayOptions>>;
+  protected languageOptions = [
+    {
+      label: 'English',
+      value: 'en',
+      countryCode: 'gb',
+    },
+    {
+      label: 'Español',
+      value: 'es',
+      countryCode: 'es',
+    },
+  ];
+  protected currentLanguage: string = 'en';
 
   constructor(
     private readonly fb: FormBuilder,
     private readonly messageService: MessageService,
     private readonly langService: LanguageService,
   ) {
+    this.currentLanguage = this.langService.getCurrentLanguage();
     for (let l in Layout) {
       this.layoutOptions.push(l)
     }

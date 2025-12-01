@@ -1,22 +1,12 @@
 import { Component, ElementRef, Input, OnInit, ViewChild } from '@angular/core';
 import { app } from '@wailsjs/go/models';
-import ForceGraph, { NodeObject } from 'force-graph';
+import ForceGraph, { LinkObject, NodeObject } from 'force-graph';
 import { debounceTime, Subject } from 'rxjs';
 import { FormsModule } from '@angular/forms';
-import { converter, parse } from 'culori';
+import { DisplayOptions } from '@/app/models/display-options';
 import Graph = app.Graph;
 import Node = app.Node;
-import { DisplayOptions } from '@/app/models/display-options';
-
-const toOklch = converter<'oklch'>('oklch');
-
-function darker(color: string, amount: number = 0.1): string {
-  const c = toOklch(parse(color));
-  if (!c) {
-    return color;
-  }
-  return `oklch(${Math.max(0, c.l - amount)} ${c.c} ${c.h})`;
-}
+import Edge = app.Edge;
 
 @Component({
   selector: 'app-interactive-two-tab',
@@ -35,7 +25,10 @@ export class InteractiveTwoTab implements OnInit {
       return;
     }
     this.data = data;
+    this.nodeMap = {};
+    this.images = {};
     for (const node of data.nodes) {
+      this.nodeMap[node.id!] = node;
       if (node.id && node.icon) {
         this.images[node.id] = new Image()
         this.images[node.id].src = node.icon;
@@ -53,6 +46,8 @@ export class InteractiveTwoTab implements OnInit {
   private data?: Graph;
 
   private resizeObserver?: ResizeObserver;
+
+  private nodeMap: { [key: string]: Node } = {};
 
   @Input() set options(displayOptions: DisplayOptions) {
     this.displayOptions = displayOptions;
@@ -84,15 +79,25 @@ export class InteractiveTwoTab implements OnInit {
             .height(rect.height)
             .d3AlphaDecay(this.displayOptions?.alphaDecay ?? 0.0228)
             .d3VelocityDecay(this.displayOptions?.velocityDecay ?? 0.4)
-            .linkLabel('label')
+            .linkLabel((link: Pick<Edge, 'label' | 'required'> & LinkObject) => {
+              return link.required ? $localize`Required: ${link.label}` : $localize`Optional: ${link.label}`;
+            })
             .linkWidth(1)
             .backgroundColor("#000")
             .linkVisibility(true)
-            .linkColor(() => "#727272")
+            .linkColor((link: Pick<Edge, 'label' | 'required'> & LinkObject) => {
+              const target = link.target as NodeObject
+              console.log(target.id, this.nodeMap[target?.id ?? ''], this.nodeMap)
+              if (this.nodeMap[target?.id ?? '']?.present) {
+                return "#727272";
+              }
+              return link.required ? "#ff0000" : "#ffcc00";
+            })
             .linkDirectionalArrowLength(6)
 
           if (this.displayOptions?.showIcons) {
             const size = 10;
+            const strokeSize = size / 15;
             this.graph
               .nodeCanvasObject((node: Node & NodeObject, ctx) => {
                 if (!node.id || !node.x || !node.y) {
@@ -102,10 +107,10 @@ export class InteractiveTwoTab implements OnInit {
                   // draw circle
                   ctx.beginPath()
                   ctx.arc(node.x, node.y, size / 2, 0, 2 * Math.PI, false);
-                  ctx.fillStyle = node?.color ?? "#fff";
+                  ctx.fillStyle = "#cfcfcf";
                   ctx.fill();
-                  ctx.lineWidth = size / 15;
-                  ctx.strokeStyle = darker(node.color ?? 'white');
+                  ctx.lineWidth = strokeSize;
+                  ctx.strokeStyle = "#8e8e8e";
                   ctx.stroke();
                 } else {
                   ctx.drawImage(this.images[node.id], node.x - size / 2, node.y - size / 2, size, size);
@@ -116,7 +121,8 @@ export class InteractiveTwoTab implements OnInit {
                   return;
                 }
                 ctx.fillStyle = color;
-                ctx.fillRect(node.x - size / 2, node.y - size / 2, size, size); // draw square as pointer trap
+                const s = strokeSize * 2 + size;
+                ctx.fillRect(node.x - s / 2, node.y - s / 2, s, s); // draw square as pointer trap
               })
           }
           this.graph.graphData(this.data ?? {nodes: [], links: []})
