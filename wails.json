@@ -7,7 +7,7 @@
   "frontend:dev:serverUrl": "http://localhost:4200",
   "version": "2",
   "build:dir": "build",
-  "build:tags": "",
+  "build:tags": "webkit2_41",
   "outputfilename": "ModpackGraph",
   "runNonNativeBuildHooks": false,
   "postBuildHooks": null,

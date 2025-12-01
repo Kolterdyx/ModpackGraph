@@ -7,7 +7,6 @@ import (
 	"encoding/json"
 	"io/fs"
 	"net/http"
-	"os"
 	"path"
 	"text/template"
 
@@ -50,17 +49,6 @@ func (c assetFS) Open(name string) (fs.File, error) {
 }
 
 func main() {
-
-	// setup logging to file
-	logFile, _ := os.OpenFile("log", os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
-	defer logFile.Close()
-	//log.SetOutput(logFile)
-	// Create an instance of the app structure
-	defer func() {
-		if r := recover(); r != nil {
-			//log.Fatal(r)
-		}
-	}()
 
 	var config app2.Config
 	err := json.Unmarshal(configJSON, &config)
