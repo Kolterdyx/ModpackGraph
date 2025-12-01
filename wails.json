@@ -8,22 +8,18 @@
   "frontend:dev:install": "",
   "frontend:dev:watcher": "npm run start",
   "frontend:dev:serverUrl": "http://localhost:4200",
-  "wailsjsdir": "/home/kolterdyx/GolandProjects/ModpackGraph/frontend",
   "version": "2",
-  "projectdir": "/home/kolterdyx/GolandProjects/ModpackGraph",
   "build:dir": "build",
   "build:tags": "webkit2_41",
   "outputfilename": "ModpackGraph",
-  "OutputType": "",
-  "Platform": "",
   "runNonNativeBuildHooks": false,
   "postBuildHooks": null,
   "preBuildHooks": null,
-  "Author": {
+  "author": {
     "name": "Ciro García Belmonte",
     "email": "info@cirogarcia.dev"
   },
-  "Info": {
+  "info": {
     "companyName": "Ciro García Belmonte",
     "productName": "ModpackGraph",
     "productVersion": "1.0.0",
@@ -34,16 +30,11 @@
   },
   "debounceMS": 100,
   "devServer": "localhost:34115",
-  "appargs": "",
   "nsisType": "multiple",
-  "obfuscated": false,
-  "garbleargs": "",
   "frontend:dir": "frontend",
   "viteServerTimeout": 10,
   "bindings": {
     "ts_generation": {
-      "prefix": "",
-      "suffix": "",
       "outputType": "interfaces"
     }
   }

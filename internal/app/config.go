@@ -5,9 +5,9 @@ type Config struct {
 		Version   string `json:"productVersion"`
 		Copyright string `json:"copyright"`
 		Comments  string `json:"comments"`
-	} `json:"Info"`
+	} `json:"info"`
 	Author struct {
 		Name  string `json:"name"`
 		Email string `json:"email"`
-	} `json:"Author"`
+	} `json:"author"`
 }
