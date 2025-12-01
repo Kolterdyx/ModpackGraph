@@ -30,8 +30,11 @@ jobs:
           submodules: recursive
 
       - name: Build wails
-        uses: dAppServer/wails-build-action@v3
+        uses: snider/build/actions/build/wails2@v3
         id: build
         with:
           build-name: ${{ matrix.build.name }}
           build-platform: ${{ matrix.build.platform }}
+          nsis: true
+          wails-version: '2.11.0'
+          go-version: '1.23'
