@@ -65,7 +65,7 @@ jobs:
         shell: bash
         working-directory: ${{ inputs.app-working-directory }}
         run: |
-          productbuild --component build/bin/*.app /Applications /build/bin/modpackgraph-macos.pkg
+          productbuild --component build/bin/*.app /Applications build/bin/modpackgraph-macos.pkg
 
       - uses: actions/cache@v4
         with:
