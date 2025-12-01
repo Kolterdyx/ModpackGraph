@@ -21,12 +21,13 @@ jobs:
           {platform: 'darwin/universal', os: 'macos-14'}
         ]
     runs-on: ${{ matrix.build.os }}
+    if: startsWith(github.ref, 'refs/tags/') && github.event.base_ref == 'refs/heads/master'
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
       - name: Setup Linux
-        if: runnes.os == 'Linux'
+        if: runner.os == 'Linux'
         id: linux_setup
         run: |
           sudo apt-get -yq update
