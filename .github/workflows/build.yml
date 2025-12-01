@@ -8,6 +8,9 @@ on:
 env:
   NODE_OPTIONS: "--max-old-space-size=4096"
 
+permissions:
+  contents: write
+
 jobs:
   build:
     strategy:
