@@ -17,9 +17,11 @@ jobs:
         build:
           - name: 'modpackgraph'
             platform:  'linux/amd64'
+            nsis: false
             os: 'ubuntu-latest'
           - name: 'modpackgraph'
             platform:  'windows/amd64'
+            nsis: true
             os: 'windows-latest'
 
     runs-on: ${{ matrix.build.os }}
@@ -33,7 +35,7 @@ jobs:
         with:
           build-name: ${{ matrix.build.name }}
           build-platform: ${{ matrix.build.platform }}
-          nsis: true
+          nsis: ${{ matrix.build.nsis }}
           wails-version: 'v2.11.0'
           go-version: '1.23'
           name: ${{ matrix.build.name }}
