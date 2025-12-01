@@ -1,19 +1,49 @@
 {
-  "$schema": "https://wails.io/schemas/config.v2.json",
   "name": "ModpackGraph",
-  "outputfilename": "ModpackGraph",
   "assetdir": "./frontend/dist/frontend/browser",
-  "build:tags": "webkit2_41",
-  "frontend:install": "npm install",
   "frontend:build": "npm run build",
+  "frontend:install": "npm install",
+  "frontend:dev": "",
+  "frontend:dev:build": "",
+  "frontend:dev:install": "",
   "frontend:dev:watcher": "npm run start",
   "frontend:dev:serverUrl": "http://localhost:4200",
-  "author": {
+  "wailsjsdir": "/home/kolterdyx/GolandProjects/ModpackGraph/frontend",
+  "version": "2",
+  "projectdir": "/home/kolterdyx/GolandProjects/ModpackGraph",
+  "build:dir": "build",
+  "build:tags": "webkit2_41",
+  "outputfilename": "ModpackGraph",
+  "OutputType": "",
+  "Platform": "",
+  "runNonNativeBuildHooks": false,
+  "postBuildHooks": null,
+  "preBuildHooks": null,
+  "Author": {
     "name": "Ciro García Belmonte",
     "email": "info@cirogarcia.dev"
   },
+  "Info": {
+    "companyName": "ModpackGraph",
+    "productName": "ModpackGraph",
+    "productVersion": "1.0.0",
+    "copyright": "Copyright.........",
+    "comments": "Built using Wails (https://wails.io)",
+    "fileAssociations": null,
+    "protocols": null
+  },
+  "debounceMS": 100,
+  "devServer": "localhost:34115",
+  "appargs": "",
+  "nsisType": "multiple",
+  "obfuscated": false,
+  "garbleargs": "",
+  "frontend:dir": "frontend",
+  "viteServerTimeout": 10,
   "bindings": {
     "ts_generation": {
+      "prefix": "",
+      "suffix": "",
       "outputType": "interfaces"
     }
   }

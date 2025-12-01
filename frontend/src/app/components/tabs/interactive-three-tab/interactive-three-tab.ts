@@ -3,7 +3,7 @@ import { app } from '@wailsjs/go/models';
 import { debounceTime, Subject } from 'rxjs';
 import ForceGraph3D, { ForceGraph3DInstance } from '3d-force-graph';
 import { FormsModule } from '@angular/forms';
-import { DisplayOptions } from '@/app/models/display-options';
+import { GraphDisplayOptions } from '@/app/models/graph-display-options';
 import Graph = app.Graph;
 import { LinkObject, NodeObject } from 'force-graph';
 import Edge = app.Edge;
@@ -54,12 +54,12 @@ export class InteractiveThreeTab implements OnInit {
 
   private data?: Graph;
 
-  @Input() set options(displayOptions: DisplayOptions) {
+  @Input() set options(displayOptions: GraphDisplayOptions) {
     this.displayOptions = displayOptions;
     this.regenerate$.next()
   }
 
-  private displayOptions?: DisplayOptions;
+  private displayOptions?: GraphDisplayOptions;
 
   private resizeObserver?: ResizeObserver;
 
@@ -81,8 +81,7 @@ export class InteractiveThreeTab implements OnInit {
         this.graph = new ForceGraph3D(this.graphElement.nativeElement)
           .width(rect.width)
           .height(rect.height)
-          .d3AlphaDecay(this.displayOptions?.alphaDecay ?? 0.0228)
-          .d3VelocityDecay(this.displayOptions?.velocityDecay ?? 0.4)
+          .d3AlphaDecay(0.1)
           .linkLabel((link: Pick<Edge, 'label' | 'required'> & LinkObject) => {
             return link.required ? $localize`Required: ${link.label}` : $localize`Optional: ${link.label}`;
           })

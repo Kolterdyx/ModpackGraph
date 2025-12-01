@@ -1,9 +1,13 @@
-<p-scroll-panel class="w-full h-full ">
-  <div>
-    <p-data-view [value]="mods">
-      <ng-template #list>
-        @for (mod of mods; track mod.id) {
-          <div class="flex flex-row mb-3 bg-neutral-900">
+<p-scroll-panel class="w-full h-full">
+  <p-data-view [value]="mods">
+    <ng-template #list>
+      @for (mod of mods; track mod.id) {
+        @if ((!options?.showRequired && mod.required && !mod.present) ||
+        (!options?.showOptional && !mod.required && !mod.present) ||
+        (!options?.showInstalled && mod.present)) {
+          <!-- Skip rendering this mod -->
+        } @else {
+          <div class="flex flex-row mb-3">
             <div class="mr-4 flex flex-col items-center">
               <img [src]="mod.iconURL" alt="logo for {{ mod.name }}" width="64" height="64"/>
             </div>
@@ -21,7 +25,7 @@
             </div>
           </div>
         }
-      </ng-template>
-    </p-data-view>
-  </div>
+      }
+    </ng-template>
+  </p-data-view>
 </p-scroll-panel>

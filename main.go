@@ -8,6 +8,9 @@ import (
 	"github.com/wailsapp/wails/v2"
 	"github.com/wailsapp/wails/v2/pkg/options"
 	"github.com/wailsapp/wails/v2/pkg/options/assetserver"
+	"github.com/wailsapp/wails/v2/pkg/options/linux"
+	"github.com/wailsapp/wails/v2/pkg/options/mac"
+	"github.com/wailsapp/wails/v2/pkg/options/windows"
 	"io/fs"
 	"net/http"
 	"path"
@@ -97,6 +100,15 @@ func main() {
 		OnStartup:                app.Startup,
 		Bind: []any{
 			app,
+		},
+		Windows: &windows.Options{
+			WindowIsTranslucent: true,
+		},
+		Linux: &linux.Options{
+			WindowIsTranslucent: true,
+		},
+		Mac: &mac.Options{
+			WindowIsTranslucent: true,
 		},
 		EnumBind: []any{
 			app2.AllLayouts,

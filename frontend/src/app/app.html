@@ -1,4 +1,4 @@
-<div class="flex flex-row max-h-screen h-screen w-full bg-neutral-900  p-8 gap-4">
+<div class="flex flex-row max-h-screen h-screen w-full p-8 gap-4">
   <p-scroll-panel class="w-1/4">
     <div class="flex flex-col gap-4">
       <div class="flex flex-col gap-4 p-4 border border-neutral-700 rounded">
@@ -20,18 +20,29 @@
         />
       </div>
       <div class="flex flex-col gap-4 p-4 border border-neutral-700 rounded">
-        <h3 i18n>Display options</h3>
-        @if (displayForm) {
-          <form [formGroup]="displayForm" class="grid grid-cols-1 gap-2">
-            <p-toggle-button formControlName="showIcons" i18n-onLabel i18n-offLabel onLabel="Hide icons" offLabel="Show icons"/>
-            <label i18n>Alpha decay: {{ displayOptions.alphaDecay }}</label>
-            <p-slider formControlName="alphaDecay" [min]="0" [max]="0.1" [step]="0.001"/>
-            <label i18n>Velocity decay: {{ displayOptions.velocityDecay }}</label>
-            <p-slider formControlName="velocityDecay" [min]="0.01" [max]="1" [step]="0.01"/>
+        <h3 i18n>Graph display options</h3>
+        @if (graphDisplayForm) {
+          <form [formGroup]="graphDisplayForm" class="grid grid-cols-1 gap-2">
+            <label i18n>Show mod icons</label>
+            <p-toggle-switch formControlName="showIcons"/>
           </form>
         }
       </div>
-      <p-select [options]="languageOptions" (onChange)="setLanguage($event.value)" [ngModel]="currentLanguage" i18n-placeholder placeholder="Select Language">
+      <div class="flex flex-col gap-4 p-4 border border-neutral-700 rounded">
+        <h3 i18n>List display options</h3>
+        @if (listDisplayForm) {
+          <form [formGroup]="listDisplayForm" class="grid grid-cols-1 gap-2">
+            <label i18n>Show required mods</label>
+            <p-toggle-switch formControlName="showRequired"/>
+            <label i18n>Show optional mods</label>
+            <p-toggle-switch formControlName="showOptional"/>
+            <label i18n>Show installed mods</label>
+            <p-toggle-switch formControlName="showInstalled"/>
+          </form>
+        }
+      </div>
+      <p-select [options]="languageOptions" (onChange)="setLanguage($event.value)" [ngModel]="currentLanguage" i18n-placeholder
+                placeholder="Select Language">
         <ng-template #selectedItem let-item>
           <div class="flex items-center gap-2">
             <span [class]="'fi fi-' + item.countryCode" style="width: 18px"></span>
@@ -60,21 +71,21 @@
         <app-list-tab
           class="h-full w-full flex flex-col gap-2 min-h-0"
           [graphData]="graphData"
-          [options]="displayOptions"
+          [options]="listDisplayOptions"
         />
       }
       @case ('2Di') {
         <app-interactive-two-tab
           class="h-full w-full flex flex-col gap-2 min-h-0 border border-neutral-700"
           [graphData]="graphData"
-          [options]="displayOptions"
+          [options]="graphDisplayOptions"
         />
       }
       @case ('3Di') {
         <app-interactive-three-tab
           class="h-full w-full flex flex-col gap-2 min-h-0 border border-neutral-700"
           [graphData]="graphData"
-          [options]="displayOptions"
+          [options]="graphDisplayOptions"
         />
       }
     }

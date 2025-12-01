@@ -10,9 +10,7 @@ import { InteractiveThreeTab } from '@components/tabs/interactive-three-tab/inte
 import { GenerateDependencyGraph } from '@wailsjs/go/app/App';
 import { app } from '@wailsjs/go/models';
 import { Button } from 'primeng/button';
-import { ToggleButton } from 'primeng/togglebutton';
-import { DisplayOptions } from '@/app/models/display-options';
-import { Slider } from 'primeng/slider';
+import { GraphDisplayOptions, ListDisplayOptions } from '@/app/models/graph-display-options';
 import { ScrollPanel } from 'primeng/scrollpanel';
 import { LanguageService } from '@services/language-service';
 import { Select } from 'primeng/select';
@@ -20,6 +18,7 @@ import Graph = app.Graph;
 import GraphGenerationOptions = app.GraphGenerationOptions;
 import Layout = app.Layout;
 import { ListTab } from '@components/tabs/list-tab/list-tab';
+import { ToggleSwitch } from 'primeng/toggleswitch';
 
 interface SelectValue {
   label: string;
@@ -39,11 +38,10 @@ interface SelectValue {
     InteractiveTwoTab,
     InteractiveThreeTab,
     Button,
-    ToggleButton,
-    Slider,
     ScrollPanel,
     Select,
     ListTab,
+    ToggleSwitch,
   ],
   providers: [
     MessageService,
@@ -74,10 +72,16 @@ export class App {
   ];
   protected graphData?: Graph;
 
-  protected displayOptions: DisplayOptions = {
+  protected graphDisplayOptions: GraphDisplayOptions = {
     showIcons: true,
   };
-  protected displayForm?: FormGroup<Form<DisplayOptions>>;
+  protected listDisplayOptions: ListDisplayOptions = {
+    showInstalled: true,
+    showOptional: true,
+    showRequired: true,
+  };
+  protected graphDisplayForm?: FormGroup<Form<GraphDisplayOptions>>;
+  protected listDisplayForm?: FormGroup<Form<ListDisplayOptions>>;
   protected languageOptions = [
     {
       label: 'English',
@@ -105,14 +109,21 @@ export class App {
       path: new FormControl<string>('', [Validators.required]),
       layout: new FormControl<Layout>(Layout.fdp, [Validators.required]),
     })
-    this.displayForm = this.fb.group<Form<DisplayOptions>>({
+    this.graphDisplayForm = this.fb.group<Form<GraphDisplayOptions>>({
       showIcons: new FormControl<boolean>(true, [Validators.required]),
-      alphaDecay: new FormControl<number>(0.022, [Validators.required]),
-      velocityDecay: new FormControl<number>(0.4, [Validators.required]),
     });
-    this.displayOptions = this.displayForm.value as DisplayOptions;
-    this.displayForm.valueChanges.subscribe(value => {
-      this.displayOptions = value as DisplayOptions;
+    this.graphDisplayOptions = this.graphDisplayForm.value as GraphDisplayOptions;
+    this.graphDisplayForm.valueChanges.subscribe(value => {
+      this.graphDisplayOptions = value as GraphDisplayOptions;
+    });
+    this.listDisplayForm = this.fb.group<Form<ListDisplayOptions>>({
+      showRequired: new FormControl<boolean>(true, [Validators.required]),
+      showOptional: new FormControl<boolean>(true, [Validators.required]),
+      showInstalled: new FormControl<boolean>(true, [Validators.required]),
+    });
+    this.listDisplayOptions = this.listDisplayForm.value as ListDisplayOptions;
+    this.listDisplayForm.valueChanges.subscribe(value => {
+      this.listDisplayOptions = value as ListDisplayOptions;
     });
   }
 
