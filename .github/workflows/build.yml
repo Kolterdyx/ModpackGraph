@@ -28,7 +28,7 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Build wails
-        uses: dAppServer/wails-build-action@v2.2
+        uses: The-Egg-Corp/wails-build-action@v2.1
         id: build
         with:
           build-name: ${{ matrix.build.name }}
@@ -36,3 +36,4 @@ jobs:
           nsis: true
           wails-version: '2.11.0'
           go-version: '1.23'
+          name: ${{ matrix.build.name }}
