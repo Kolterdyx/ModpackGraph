@@ -9,6 +9,8 @@ import { LinkObject, NodeObject } from 'force-graph';
 import Edge = app.Edge;
 import Node = app.Node;
 
+import * as THREE from 'three';
+
 @Component({
   selector: 'app-interactive-three-tab',
   imports: [
@@ -23,14 +25,25 @@ export class InteractiveThreeTab implements OnInit {
 
   private nodeMap: { [key: string]: Node } = {};
 
+  private spriteMap: { [key: string]: THREE.Sprite } = {};
+
   @Input() set graphData(data: Graph | undefined) {
     if (!data) {
       return;
     }
     this.data = data;
     this.nodeMap = {};
+    const loader = new THREE.TextureLoader();
     for (const node of data.nodes) {
       this.nodeMap[node.id!] = node;
+      if (node.icon) {
+        const texture = loader.load(node.icon);
+        texture.colorSpace = THREE.SRGBColorSpace;
+        const spriteMaterial = new THREE.SpriteMaterial({ map: texture });
+        const sprite = new THREE.Sprite(spriteMaterial);
+        sprite.scale.set(12, 12, 1);
+        this.spriteMap[node.id!] = sprite;
+      }
     }
     this.regenerate$.next()
   }
@@ -85,6 +98,19 @@ export class InteractiveThreeTab implements OnInit {
             return link.required ? "#ff0000" : "#ffcc00";
           })
           .linkDirectionalArrowLength(6)
+
+        if (this.displayOptions?.showIcons) {
+          this.graph.nodeThreeObject((node: Pick<Node, 'id'> & NodeObject) => {
+            const sprite = this.spriteMap[node.id ?? ''];
+            if (sprite) {
+              return sprite.clone();
+            }
+            // Fallback to a simple sphere if no icon is found
+            const sphereGeometry = new THREE.SphereGeometry(4);
+            const sphereMaterial = new THREE.MeshBasicMaterial({ color: 0xc67a13 });
+            return new THREE.Mesh(sphereGeometry, sphereMaterial);
+          });
+        }
 
         this.graph.graphData(this.data ?? {nodes: [], links: []})
 
