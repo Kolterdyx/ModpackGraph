@@ -23,7 +23,6 @@ jobs:
         run: |
           sudo apt-get -yq update
           sudo apt-get -yq install libgtk-3-0 libwebkit2gtk-4.1-dev gcc-aarch64-linux-gnu mingw-w64
-          echo "BUILD_OPTIONS='-nsis -platform windows/amd64,linux/amd64'" >> "$GITHUB_OUTPUT"
         shell: bash
 
       - name: Setup GoLang
@@ -44,9 +43,7 @@ jobs:
         shell: bash
 
       - name: Build app
-        env:
-          BUILD_OPTIONS: ${{ steps.linux_setup.outputs.BUILD_OPTIONS }}
-        run: wails build $BUILD_OPTIONS
+        run: wails build -nsis -platform windows/amd64,linux/amd64
         shell: bash
 
       - uses: actions/cache@v4
