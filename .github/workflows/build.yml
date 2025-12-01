@@ -13,12 +13,20 @@ permissions:
 
 jobs:
   build:
-    runs-on: 'ubuntu-22.04'
+    strategy:
+      fail-fast: false
+      matrix:
+        build: [
+          {platform: 'linux/amd64,windows/amd64', os: 'ubuntu-22.04'},
+          {platform: 'darwin/universal', os: 'macos-14'}
+        ]
+    runs-on: ${{ matrix.build.os }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
       - name: Setup Linux
+        if: runnes.os == 'Linux'
         id: linux_setup
         run: |
           sudo apt-get -yq update
@@ -42,9 +50,21 @@ jobs:
         run: go install github.com/wailsapp/wails/v2/cmd/wails@v2.11.0
         shell: bash
 
-      - name: Build app
-        run: wails build -nsis -platform windows/amd64,linux/amd64
+      - name: Install macOS Wails deps
+        if: runner.os == 'macOS'
+        run: brew install mitchellh/gon/gon
         shell: bash
+
+      - name: Build app
+        run: wails build -nsis -platform ${{ matrix.build.platform }}
+        shell: bash
+
+      - name: Building Installer
+        if: runner.os == 'macOS' && inputs.sign-macos-installer-id == '' && startsWith(github.ref, 'refs/tags/')
+        shell: bash
+        working-directory: ${{ inputs.app-working-directory }}
+        run: |
+          productbuild --component build/bin/*.app /Applications /build/bin/modpackgraph-macos.pkg
 
       - uses: actions/cache@v4
         with:
