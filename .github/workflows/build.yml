@@ -17,13 +17,15 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+
       - name: Setup Linux
         id: linux_setup
         run: |
           sudo apt-get -yq update
-          sudo apt-get -yq install libgtk-3-0 libwebkit2gtk-4.1-dev gcc-aarch64-linux-gnu
+          sudo apt-get -yq install libgtk-3-0 libwebkit2gtk-4.1-dev gcc-aarch64-linux-gnu mingw-w64
           echo "BUILD_OPTIONS='-nsis -platform windows/amd64 -platform linux/amd64'" >> "$GITHUB_OUTPUT"
         shell: bash
+
       - name: Setup GoLang
         uses: actions/setup-go@v5
         with:
@@ -31,29 +33,31 @@ jobs:
           cache: true
           cache-dependency-path: 'go.sum'
           go-version: '1.23'
+
       - name: Setup NodeJS
         uses: actions/setup-node@v4
         with:
           node-version: '20'
+
       - name: Install Wails
         run: go install github.com/wailsapp/wails/v2/cmd/wails@v2.11.0
         shell: bash
+
       - name: Build app
         run: wails build ${{ steps.linux_setup.outputs.BUILD_OPTIONS }}
         shell: bash
-      - name: Add Linux perms
-        run: chmod +x build/bin/*
-        shell: bash
+
+      - uses: actions/cache@v4
+        with:
+          path: frontend/node_modules
+          key: ${{ runner.os }}-node-${{ hashFiles('frontend/package-lock.json') }}
 
       - uses: actions/upload-artifact@v4
         with:
-          path: |
-            */bin/
-            *\bin\*
+          path: build/bin/**
 
       - name: Release
         uses: softprops/action-gh-release@v1
         if: startsWith(github.ref, 'refs/tags/')
         with:
-          files: |
-            */bin/*
+          files: build/bin/**
