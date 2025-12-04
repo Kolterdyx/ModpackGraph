@@ -1,9 +1,13 @@
 package main
 
 import (
+	"ModpackGraph/internal/app"
+	"ModpackGraph/internal/di"
+	"ModpackGraph/internal/logger"
 	"bytes"
 	"embed"
 	"io/fs"
+	"log"
 	"net/http"
 	"path"
 	"text/template"
@@ -13,6 +17,7 @@ import (
 	"github.com/wailsapp/wails/v2/pkg/options/assetserver"
 	"github.com/wailsapp/wails/v2/pkg/options/linux"
 	"github.com/wailsapp/wails/v2/pkg/options/mac"
+	"go.uber.org/fx"
 )
 
 const DefaultUserLang = "en"
@@ -40,10 +45,25 @@ func (c assetFS) Open(name string) (fs.File, error) {
 }
 
 func main() {
+	// Initialize logger
+	logger.Init()
+	logger.GetLogger().Info("Starting ModpackGraph application")
 
+	// Create FX app to wire dependencies
+	fxApp := fx.New(
+		di.Module,
+		fx.Provide(app.NewApp),
+		fx.Invoke(runWailsApp),
+	)
+
+	fxApp.Run()
+}
+
+// runWailsApp starts the Wails application with injected dependencies
+func runWailsApp(application *app.App) error {
 	assetServer := http.FileServer(http.FS(NewAssetFS("frontend/dist/frontend/browser")))
 
-	_ = wails.Run(&options.App{
+	err := wails.Run(&options.App{
 		Title:  "ModpackGraph",
 		Width:  1024,
 		Height: 768,
@@ -83,12 +103,19 @@ func main() {
 			}),
 		},
 		BackgroundColour: &options.RGBA{R: 0, G: 0, B: 0, A: 255},
-		Bind:             []any{},
+		Bind:             []any{application},
 		Linux: &linux.Options{
 			WindowIsTranslucent: true,
 		},
 		Mac: &mac.Options{
 			WindowIsTranslucent: true,
 		},
+		OnStartup: application.Startup,
 	})
+
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	return nil
 }

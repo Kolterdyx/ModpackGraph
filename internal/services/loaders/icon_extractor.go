@@ -1,0 +1,67 @@
+package loaders
+
+import (
+	"archive/zip"
+	"encoding/base64"
+	"io"
+	"strings"
+)
+
+// IconExtractor is a shared utility for extracting icons from JARs
+type IconExtractor struct{}
+
+// NewIconExtractor creates a new IconExtractor
+func NewIconExtractor() *IconExtractor {
+	return &IconExtractor{}
+}
+
+// Extract tries to find and extract an icon from the JAR
+func (ie *IconExtractor) Extract(zipReader *zip.Reader, modID string) (string, error) {
+	// Common icon paths to search
+	iconPaths := []string{
+		"logo.png",
+		"icon.png",
+		"pack.png",
+		"assets/" + modID + "/icon.png",
+		"assets/" + modID + "/logo.png",
+		"assets/" + modID + "/textures/logo.png",
+	}
+
+	for _, path := range iconPaths {
+		for _, f := range zipReader.File {
+			if strings.EqualFold(f.Name, path) {
+				return ie.extractFile(f)
+			}
+		}
+	}
+
+	// No icon found, return empty string (will use default later)
+	return "", nil
+}
+
+// extractFile extracts and base64 encodes a file
+func (ie *IconExtractor) extractFile(f *zip.File) (string, error) {
+	rc, err := f.Open()
+	if err != nil {
+		return "", err
+	}
+	defer rc.Close()
+
+	data, err := io.ReadAll(rc)
+	if err != nil {
+		return "", err
+	}
+
+	// Base64 encode the image data
+	encoded := base64.StdEncoding.EncodeToString(data)
+	return "data:image/png;base64," + encoded, nil
+}
+
+// ExtractWithFallback extracts icon with a default fallback
+func (ie *IconExtractor) ExtractWithFallback(zipReader *zip.Reader, modID string, defaultIcon string) string {
+	icon, err := ie.Extract(zipReader, modID)
+	if err != nil || icon == "" {
+		return defaultIcon
+	}
+	return icon
+}

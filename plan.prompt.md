@@ -2,26 +2,6 @@
 
 Design and implement a modular, service-oriented architecture from scratch using dependency injection (Uber FX), with clear separation of concerns for mod metadata extraction, dependency resolution, conflict detection, and data persistence.
 
-## Required Dependencies
-
-Install the following Go packages:
-
-```bash
-# Dependency Injection
-go get go.uber.org/fx
-
-# Logging
-go get github.com/sirupsen/logrus
-
-# Database
-go get github.com/mattn/go-sqlite3
-go get github.com/jmoiron/sqlx  # SQL extensions
-
-# Testing
-go get github.com/stretchr/testify
-go install github.com/vektra/mockery/v2@latest  # Code generation tool
-```
-
 ## Steps
 
 1. **Create domain models** - Design `internal/models` package with core entities:
