@@ -1,6 +1,7 @@
 package loaders
 
 import (
+	"ModpackGraph/internal/assets"
 	"ModpackGraph/internal/models"
 	"archive/zip"
 	"fmt"
@@ -12,13 +13,15 @@ import (
 
 // ForgeModernLoader handles Forge 1.13+ mod metadata extraction
 type ForgeModernLoader struct {
-	iconExtractor *IconExtractor
+	iconExtractor IconExtractor
 }
 
 // NewForgeModernLoader creates a new ForgeModernLoader
-func NewForgeModernLoader() *ForgeModernLoader {
+func NewForgeModernLoader(
+	iconExtractor IconExtractor,
+) *ForgeModernLoader {
 	return &ForgeModernLoader{
-		iconExtractor: NewIconExtractor(),
+		iconExtractor: iconExtractor,
 	}
 }
 
@@ -109,7 +112,7 @@ func (fml *ForgeModernLoader) ExtractMetadata(zipReader *zip.Reader, jarPath str
 		metadata.IconData = fml.extractIconFromPath(zipReader, mod.LogoFile)
 	}
 	if metadata.IconData == "" {
-		metadata.IconData = fml.iconExtractor.ExtractWithFallback(zipReader, metadata.ID, "")
+		metadata.IconData = fml.iconExtractor.ExtractWithFallback(zipReader, metadata.ID, assets.DefaultModIconData)
 	}
 
 	return metadata, nil
@@ -171,7 +174,7 @@ func (fml *ForgeModernLoader) extractDependencies(deps []ForgeDependency, modID 
 func (fml *ForgeModernLoader) extractIconFromPath(zipReader *zip.Reader, iconPath string) string {
 	for _, f := range zipReader.File {
 		if f.Name == iconPath {
-			icon, err := fml.iconExtractor.extractFile(f)
+			icon, err := fml.iconExtractor.ExtractFile(f)
 			if err == nil {
 				return icon
 			}

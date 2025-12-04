@@ -8,29 +8,37 @@ import (
 )
 
 // IconExtractor is a shared utility for extracting icons from JARs
-type IconExtractor struct{}
+type IconExtractor interface {
+	Extract(zipReader *zip.Reader, modID string) (string, error)
+	ExtractFile(f *zip.File) (string, error)
+	ExtractWithFallback(zipReader *zip.Reader, modID string, defaultIcon string) string
+}
 
-// NewIconExtractor creates a new IconExtractor
-func NewIconExtractor() *IconExtractor {
-	return &IconExtractor{}
+type iconExtractor struct{}
+
+// NewIconExtractor creates a new iconExtractor
+func NewIconExtractor() IconExtractor {
+	return &iconExtractor{}
 }
 
 // Extract tries to find and extract an icon from the JAR
-func (ie *IconExtractor) Extract(zipReader *zip.Reader, modID string) (string, error) {
+func (ie *iconExtractor) Extract(zipReader *zip.Reader, modID string) (string, error) {
 	// Common icon paths to search
 	iconPaths := []string{
+		modID + ".png",
 		"logo.png",
 		"icon.png",
 		"pack.png",
 		"assets/" + modID + "/icon.png",
 		"assets/" + modID + "/logo.png",
+		"assets/" + modID + "/pack.png",
 		"assets/" + modID + "/textures/logo.png",
 	}
 
 	for _, path := range iconPaths {
 		for _, f := range zipReader.File {
 			if strings.EqualFold(f.Name, path) {
-				return ie.extractFile(f)
+				return ie.ExtractFile(f)
 			}
 		}
 	}
@@ -39,8 +47,8 @@ func (ie *IconExtractor) Extract(zipReader *zip.Reader, modID string) (string, e
 	return "", nil
 }
 
-// extractFile extracts and base64 encodes a file
-func (ie *IconExtractor) extractFile(f *zip.File) (string, error) {
+// ExtractFile extracts and base64 encodes a file
+func (ie *iconExtractor) ExtractFile(f *zip.File) (string, error) {
 	rc, err := f.Open()
 	if err != nil {
 		return "", err
@@ -58,7 +66,7 @@ func (ie *IconExtractor) extractFile(f *zip.File) (string, error) {
 }
 
 // ExtractWithFallback extracts icon with a default fallback
-func (ie *IconExtractor) ExtractWithFallback(zipReader *zip.Reader, modID string, defaultIcon string) string {
+func (ie *iconExtractor) ExtractWithFallback(zipReader *zip.Reader, modID string, defaultIcon string) string {
 	icon, err := ie.Extract(zipReader, modID)
 	if err != nil || icon == "" {
 		return defaultIcon

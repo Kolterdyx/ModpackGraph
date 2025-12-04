@@ -1,6 +1,7 @@
 package loaders
 
 import (
+	"ModpackGraph/internal/assets"
 	"ModpackGraph/internal/models"
 	"archive/zip"
 	"encoding/json"
@@ -10,13 +11,15 @@ import (
 
 // FabricLoader handles Fabric mod metadata extraction
 type FabricLoader struct {
-	iconExtractor *IconExtractor
+	iconExtractor IconExtractor
 }
 
 // NewFabricLoader creates a new FabricLoader
-func NewFabricLoader() *FabricLoader {
+func NewFabricLoader(
+	iconExtractor IconExtractor,
+) *FabricLoader {
 	return &FabricLoader{
-		iconExtractor: NewIconExtractor(),
+		iconExtractor: iconExtractor,
 	}
 }
 
@@ -94,7 +97,7 @@ func (fl *FabricLoader) ExtractMetadata(zipReader *zip.Reader, jarPath string) (
 		metadata.IconData = fl.extractIconFromPath(zipReader, iconPath)
 	}
 	if metadata.IconData == "" {
-		metadata.IconData = fl.iconExtractor.ExtractWithFallback(zipReader, metadata.ID, "")
+		metadata.IconData = fl.iconExtractor.ExtractWithFallback(zipReader, metadata.ID, assets.DefaultModIconData)
 	}
 
 	return metadata, nil
@@ -139,7 +142,7 @@ func (fl *FabricLoader) extractDependencies(fabricMod FabricModJSON, modID strin
 func (fl *FabricLoader) extractIconFromPath(zipReader *zip.Reader, iconPath string) string {
 	for _, f := range zipReader.File {
 		if f.Name == iconPath {
-			icon, err := fl.iconExtractor.extractFile(f)
+			icon, err := fl.iconExtractor.ExtractFile(f)
 			if err == nil {
 				return icon
 			}

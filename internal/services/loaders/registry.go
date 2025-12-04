@@ -4,7 +4,13 @@ import (
 	"ModpackGraph/internal/models"
 	"archive/zip"
 	"fmt"
+	"go.uber.org/fx"
 )
+
+type loaderRegistryParams struct {
+	fx.In
+	Loaders []ModLoader `group:"mod_loader"`
+}
 
 // LoaderRegistry manages all mod loaders and detects the correct one for a JAR
 type LoaderRegistry struct {
@@ -12,14 +18,9 @@ type LoaderRegistry struct {
 }
 
 // NewLoaderRegistry creates a new LoaderRegistry with all available loaders
-func NewLoaderRegistry() *LoaderRegistry {
+func NewLoaderRegistry(p loaderRegistryParams) *LoaderRegistry {
 	return &LoaderRegistry{
-		loaders: []ModLoader{
-			NewFabricLoader(),
-			NewForgeModernLoader(),
-			NewForgeLegacyLoader(),
-			NewNeoForgeLoader(),
-		},
+		loaders: p.Loaders,
 	}
 }
 

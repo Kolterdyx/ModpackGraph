@@ -1,6 +1,7 @@
 package loaders
 
 import (
+	"ModpackGraph/internal/assets"
 	"ModpackGraph/internal/models"
 	"archive/zip"
 	"encoding/json"
@@ -11,13 +12,15 @@ import (
 
 // ForgeLegacyLoader handles Forge 1.12.2 and earlier mod metadata extraction
 type ForgeLegacyLoader struct {
-	iconExtractor *IconExtractor
+	iconExtractor IconExtractor
 }
 
 // NewForgeLegacyLoader creates a new ForgeLegacyLoader
-func NewForgeLegacyLoader() *ForgeLegacyLoader {
+func NewForgeLegacyLoader(
+	iconExtractor IconExtractor,
+) *ForgeLegacyLoader {
 	return &ForgeLegacyLoader{
-		iconExtractor: NewIconExtractor(),
+		iconExtractor: iconExtractor,
 	}
 }
 
@@ -112,7 +115,7 @@ func (fll *ForgeLegacyLoader) ExtractMetadata(zipReader *zip.Reader, jarPath str
 		metadata.IconData = fll.extractIconFromPath(zipReader, mod.LogoFile)
 	}
 	if metadata.IconData == "" {
-		metadata.IconData = fll.iconExtractor.ExtractWithFallback(zipReader, metadata.ID, "")
+		metadata.IconData = fll.iconExtractor.ExtractWithFallback(zipReader, metadata.ID, assets.DefaultModIconData)
 	}
 
 	return metadata, nil
@@ -202,7 +205,7 @@ func (fll *ForgeLegacyLoader) parseDependencyString(depStr string, modID string,
 func (fll *ForgeLegacyLoader) extractIconFromPath(zipReader *zip.Reader, iconPath string) string {
 	for _, f := range zipReader.File {
 		if f.Name == iconPath {
-			icon, err := fll.iconExtractor.extractFile(f)
+			icon, err := fll.iconExtractor.ExtractFile(f)
 			if err == nil {
 				return icon
 			}
