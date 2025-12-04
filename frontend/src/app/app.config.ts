@@ -1,38 +1,25 @@
 import { ApplicationConfig, provideBrowserGlobalErrorListeners, provideZoneChangeDetection } from '@angular/core';
+import { provideRouter } from '@angular/router';
 import { providePrimeNG } from 'primeng/config';
-import DefaultTheme from '@primeuix/themes/aura';
+import Aura from '@primeuix/themes/aura';
 import { provideAnimationsAsync } from '@angular/platform-browser/animations/async';
-import { definePreset } from '@primeuix/themes';
-
-const Theme = definePreset({
-  options: {
-    darkModeSelector: '.dark-theme',
-  },
-  components: {
-    toast: {
-      colorScheme: {
-        dark: {
-          info: {
-            background: '{surface.900}',
-          }
-        }
-      }
-    },
-  }
-}, DefaultTheme);
+import { MessageService } from 'primeng/api';
+import { routes } from './app.routes';
 
 export const appConfig: ApplicationConfig = {
   providers: [
+    provideBrowserGlobalErrorListeners(),
+    provideZoneChangeDetection({ eventCoalescing: true }),
+    provideRouter(routes),
     provideAnimationsAsync(),
     providePrimeNG({
       theme: {
-        preset: Theme,
+        preset: Aura,
         options: {
-          darkModeSelector: '.dark-theme',
-        }
-      }
+          darkModeSelector: '.dark',
+        },
+      },
     }),
-    provideBrowserGlobalErrorListeners(),
-    provideZoneChangeDetection({eventCoalescing: true}),
-  ]
+    MessageService,
+  ],
 };

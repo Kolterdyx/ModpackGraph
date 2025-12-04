@@ -34,7 +34,6 @@
     "@primeuix/themes": "^1.2.5",
     "@tailwindcss/postcss": "^4.1.17",
     "3d-force-graph": "^1.79.0",
-    "culori": "^4.0.2",
     "flag-icons": "^7.5.0",
     "force-graph": "^1.51.0",
     "primeicons": "^7.0.0",
