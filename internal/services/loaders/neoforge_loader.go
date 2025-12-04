@@ -12,9 +12,9 @@ type NeoForgeLoader struct {
 }
 
 // NewNeoForgeLoader creates a new NeoForgeLoader
-func NewNeoForgeLoader() *NeoForgeLoader {
+func NewNeoForgeLoader(f *ForgeModernLoader) *NeoForgeLoader {
 	return &NeoForgeLoader{
-		ForgeModernLoader: NewForgeModernLoader(),
+		ForgeModernLoader: f,
 	}
 }
 

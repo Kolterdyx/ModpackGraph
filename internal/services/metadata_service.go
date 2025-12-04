@@ -17,9 +17,11 @@ type MetadataService struct {
 }
 
 // NewMetadataService creates a new MetadataService
-func NewMetadataService() *MetadataService {
+func NewMetadataService(
+	loaderRegistry *loaders.LoaderRegistry,
+) *MetadataService {
 	return &MetadataService{
-		loaderRegistry: loaders.NewLoaderRegistry(),
+		loaderRegistry: loaderRegistry,
 	}
 }
 
