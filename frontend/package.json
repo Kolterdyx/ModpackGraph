@@ -42,8 +42,7 @@
     "svg-pan-zoom": "^3.6.2",
     "tailwindcss-primeui": "^0.6.1",
     "three": "^0.181.2",
-    "tslib": "^2.3.0",
-    "zone.js": "~0.15.0"
+    "tslib": "^2.3.0"
   },
   "devDependencies": {
     "@angular/build": "^20.3.10",

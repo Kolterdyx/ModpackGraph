@@ -1,7 +1,8 @@
-import { Component, OnInit } from '@angular/core';
+import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute } from '@angular/router';
 import { map } from 'rxjs/operators';
+import { Observable } from 'rxjs';
 
 @Component({
   selector: 'app-scan-results-page',
@@ -10,7 +11,7 @@ import { map } from 'rxjs/operators';
   template: `
     <div class="p-4">
       <h1 class="text-2xl font-bold mb-4">Scan Results</h1>
-      <p class="mb-2">Path: {{ path }}</p>
+      <p class="mb-2">Path: {{ path$ | async }}</p>
 
       <!-- TODO: Display scan results -->
       <!-- TODO: Show mods list with AppDataTable -->
@@ -19,17 +20,13 @@ import { map } from 'rxjs/operators';
     </div>
   `,
 })
-export class ScanResultsPageComponent implements OnInit {
-  path: string = '';
+export class ScanResultsPageComponent {
+  path$: Observable<string>;
 
-  constructor(private route: ActivatedRoute) {}
-
-  ngOnInit(): void {
-    this.route.queryParams
-      .pipe(map((params) => decodeURIComponent(params['path'] || '')))
-      .subscribe((path) => {
-        this.path = path;
-      });
+  constructor(private route: ActivatedRoute) {
+    this.path$ = this.route.queryParams.pipe(
+      map((params) => decodeURIComponent(params['path'] || ''))
+    );
   }
 }
 

@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { Observable, tap, finalize, merge } from 'rxjs';
+import { Observable, tap, finalize, filter } from 'rxjs';
 import { services } from '@wailsjs/go/models';
 import { WailsAppService } from '@core/services/wails/wails-app.service';
 import { WailsEventsService } from '@core/services/wails/wails-events.service';
@@ -15,18 +15,19 @@ export class AnalysisService {
     private wailsEventsService: WailsEventsService,
     private analysisStateService: AnalysisStateService,
     private modpackStateService: ModpackStateService
-  ) {}
+  ) {
+    // Set up progress tracking as a long-lived subscription
+    // In zoneless mode, state updates will trigger change detection via signals or async pipes
+    this.wailsEventsService.onProgress().pipe(
+      filter(event => event.operation === 'analyze')
+    ).subscribe((event) => {
+      this.analysisStateService.updateAnalysisProgress(event.progress);
+    });
+  }
 
   analyzeModpack(path: string): Observable<services.AnalysisReport> {
     this.analysisStateService.startAnalysis();
     this.modpackStateService.selectModpack(path);
-
-    // Subscribe to progress events
-    this.wailsEventsService.onProgress().subscribe((event) => {
-      if (event.operation === 'analyze') {
-        this.analysisStateService.updateAnalysisProgress(event.progress);
-      }
-    });
 
     return this.wailsAppService.analyzeModpack(path).pipe(
       tap((report) => {

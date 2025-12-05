@@ -41,3 +41,7 @@ export function RefreshModpack(arg1) {
 export function ScanModpack(arg1) {
   return window['go']['app']['App']['ScanModpack'](arg1);
 }
+
+export function Startup(arg1) {
+  return window['go']['app']['App']['Startup'](arg1);
+}

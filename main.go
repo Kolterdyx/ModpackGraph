@@ -1,23 +1,25 @@
 package main
 
 import (
+	"ModpackGraph/internal"
 	"ModpackGraph/internal/app"
 	"ModpackGraph/internal/di"
+	"ModpackGraph/internal/enums"
 	"ModpackGraph/internal/logger"
+	"ModpackGraph/internal/util"
 	"bytes"
+	"context"
 	"embed"
-	"io/fs"
-	"log"
-	"net/http"
-	"path"
-	"text/template"
-
 	"github.com/wailsapp/wails/v2"
 	"github.com/wailsapp/wails/v2/pkg/options"
 	"github.com/wailsapp/wails/v2/pkg/options/assetserver"
 	"github.com/wailsapp/wails/v2/pkg/options/linux"
 	"github.com/wailsapp/wails/v2/pkg/options/mac"
 	"go.uber.org/fx"
+	"io/fs"
+	"net/http"
+	"path"
+	"text/template"
 )
 
 const DefaultUserLang = "en"
@@ -30,78 +32,39 @@ var assets embed.FS
 //go:embed language-index.gohtml
 var languageIndexTMPL string
 
-type assetFS struct {
+type offsetFS struct {
 	root string
 }
 
 func NewAssetFS(root string) fs.FS {
-	return &assetFS{
+	return &offsetFS{
 		root: root,
 	}
 }
 
-func (c assetFS) Open(name string) (fs.File, error) {
+func (c offsetFS) Open(name string) (fs.File, error) {
 	return assets.Open(path.Join(c.root, name))
 }
 
 func main() {
 	// Initialize logger
 	logger.Init()
-	logger.GetLogger().Info("Starting ModpackGraph application")
+	logger.GetLogger().Infof("Starting ModpackGraph application %v", internal.BuildType)
+
+	var application *app.App
 
 	// Create FX app to wire dependencies
 	fxApp := fx.New(
 		di.Module,
 		fx.Provide(app.NewApp),
-		fx.Invoke(runWailsApp),
+		fx.Populate(&application),
 	)
 
-	fxApp.Run()
-}
-
-// runWailsApp starts the Wails application with injected dependencies
-func runWailsApp(application *app.App) error {
-	assetServer := http.FileServer(http.FS(NewAssetFS("frontend/dist/frontend/browser")))
-
 	err := wails.Run(&options.App{
-		Title:  "ModpackGraph",
-		Width:  1024,
-		Height: 768,
-		AssetServer: &assetserver.Options{
-			Assets: nil,
-			Handler: http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-				if r.URL.Path == "/" {
-					language := r.Header.Get("Accept-Language")
-					selectedLang := DefaultUserLang
-					for _, lang := range supportedLangs {
-						if len(language) >= 2 && language[0:2] == lang {
-							selectedLang = lang
-							break
-						}
-					}
-					tmpl, err := template.New("language-index").Parse(languageIndexTMPL)
-					if err != nil {
-						http.Error(w, "Internal Server Error", http.StatusInternalServerError)
-						return
-					}
-					data := struct {
-						Lang string
-					}{
-						Lang: selectedLang,
-					}
-					var buf bytes.Buffer
-					err = tmpl.Execute(&buf, data)
-					if err != nil {
-						http.Error(w, "Internal Server Error", http.StatusInternalServerError)
-						return
-					}
-					w.Header().Set("Content-Type", "text/html; charset=utf-8")
-					_, _ = w.Write(buf.Bytes())
-				} else {
-					assetServer.ServeHTTP(w, r)
-				}
-			}),
-		},
+		Title:            "ModpackGraph",
+		Width:            1024,
+		Height:           768,
+		AssetServer:      getAssetServerOptions(),
 		BackgroundColour: &options.RGBA{R: 0, G: 0, B: 0, A: 255},
 		Bind:             []any{application},
 		Linux: &linux.Options{
@@ -110,12 +73,63 @@ func runWailsApp(application *app.App) error {
 		Mac: &mac.Options{
 			WindowIsTranslucent: true,
 		},
-		OnStartup: application.Startup,
+		OnStartup: func(ctx context.Context) {
+			go func() {
+				if err := fxApp.Start(ctx); err != nil {
+					logger.GetLogger().WithError(err).Fatal("Failed to start FX application")
+				}
+			}()
+			application.Startup(ctx)
+		},
+		OnShutdown: func(ctx context.Context) {
+			if err := fxApp.Stop(ctx); err != nil {
+				logger.GetLogger().WithError(err).Fatal("Failed to stop FX application")
+			}
+		},
 	})
 
 	if err != nil {
-		log.Fatal(err)
+		logger.GetLogger().WithError(err).Fatal("Failed to start application")
 	}
+}
 
-	return nil
+func getAssetServerOptions() *assetserver.Options {
+	assetFS := NewAssetFS("frontend/dist/frontend/browser")
+	assetServer := http.FileServer(http.FS(assetFS))
+
+	return &assetserver.Options{
+		Assets: util.If(internal.BuildType == enums.BuildTypeProduction, nil, assetFS),
+		Handler: http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			if r.URL.Path == "/" {
+				language := r.Header.Get("Accept-Language")
+				selectedLang := DefaultUserLang
+				for _, lang := range supportedLangs {
+					if len(language) >= 2 && language[0:2] == lang {
+						selectedLang = lang
+						break
+					}
+				}
+				tmpl, err := template.New("language-index").Parse(languageIndexTMPL)
+				if err != nil {
+					http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+					return
+				}
+				data := struct {
+					Lang string
+				}{
+					Lang: selectedLang,
+				}
+				var buf bytes.Buffer
+				err = tmpl.Execute(&buf, data)
+				if err != nil {
+					http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+					return
+				}
+				w.Header().Set("Content-Type", "text/html; charset=utf-8")
+				_, _ = w.Write(buf.Bytes())
+			} else {
+				assetServer.ServeHTTP(w, r)
+			}
+		}),
+	}
 }
