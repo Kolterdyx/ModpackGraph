@@ -55,6 +55,7 @@ func main() {
 
 	// Create FX app to wire dependencies
 	fxApp := fx.New(
+		fx.NopLogger,
 		di.Module,
 		fx.Provide(app.NewApp),
 		fx.Populate(&application),

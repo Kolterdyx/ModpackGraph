@@ -30,8 +30,8 @@ type ModMetadata struct {
 	Dependencies []*Dependency `json:"dependencies"`
 	MetadataJSON string        `json:"metadata_json,omitempty"` // Raw metadata
 	FilePath     string        `json:"file_path,omitempty"`
-	CreatedAt    time.Time     `json:"created_at"`
-	UpdatedAt    time.Time     `json:"updated_at"`
+	CreatedAt    time.Time     `json:"created_at" ts_type:"Date" ts_transform:"new Date(__VALUE__)" ts_doc:"This is a comment"`
+	UpdatedAt    time.Time     `json:"updated_at" ts_type:"Date" ts_transform:"new Date(__VALUE__)" ts_doc:"This is a comment"`
 }
 
 // NewModMetadata creates a new ModMetadata

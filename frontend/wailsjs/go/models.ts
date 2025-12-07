@@ -58,10 +58,8 @@ export namespace models {
 	    dependencies: Dependency[];
 	    metadata_json?: string;
 	    file_path?: string;
-	    // Go type: time
-	    created_at: any;
-	    // Go type: time
-	    updated_at: any;
+	    created_at: Date;
+	    updated_at: Date;
 	}
 	export interface Modpack {
 	    id: number;

@@ -22,20 +22,22 @@ type WailsConfig struct {
 	} `json:"info"`
 }
 
-func Dev() error {
-	fmt.Println("Starting development server...")
-	xflags, err := metaFlags(enums.BuildTypeDevelopment)
-	if err != nil {
-		return err
+// getWebkitGTKVersion returns "4.0", "4.1", or an error
+func getWebkitGTKVersion() (string, error) {
+	// Try webkit2gtk-4.1 first
+	if exists("webkit2gtk-4.1") {
+		return "4.1", nil
 	}
+	// Then fallback to 4.0
+	if exists("webkit2gtk-4.0") {
+		return "4.0", nil
+	}
+	return "", fmt.Errorf("no supported webkit2gtk version found")
+}
 
-	xflagsStr := "-X '" + strings.Join(xflags, "' -X '") + "'"
-	ldflags := xflagsStr
-	cmd := exec.Command("wails", "dev", "-tags", "webkit2_41", "-ldflags", ldflags, "-nogorebuild")
-	cmd.Stdout = os.Stdout
-	cmd.Stderr = os.Stderr
-	cmd.Stdin = os.Stdin
-	return cmd.Run()
+func exists(pkg string) bool {
+	cmd := exec.Command("pkg-config", "--exists", pkg)
+	return cmd.Run() == nil
 }
 
 func metaFlags(buildType string) ([]string, error) {
@@ -52,6 +54,35 @@ func metaFlags(buildType string) ([]string, error) {
 	}, nil
 }
 
+func Dev() error {
+	fmt.Println("Starting development server...")
+	xflags, err := metaFlags(enums.BuildTypeDevelopment)
+	if err != nil {
+		return err
+	}
+
+	xflagsStr := "-X '" + strings.Join(xflags, "' -X '") + "'"
+	ldflags := xflagsStr
+
+	args := []string{
+		"dev",
+		"-ldflags", ldflags,
+		"-nogorebuild",
+	}
+
+	if webkitVersion, err := getWebkitGTKVersion(); err == nil && webkitVersion == "4.1" {
+		args = append(args, "-tags", "webkit2_41")
+	} else if err != nil {
+		return err
+	}
+
+	cmd := exec.Command("wails", args...)
+	cmd.Stdout = os.Stdout
+	cmd.Stderr = os.Stderr
+	cmd.Stdin = os.Stdin
+	return cmd.Run()
+}
+
 func BuildLinux() error {
 	fmt.Println("Building...")
 	xflags, err := metaFlags(enums.BuildTypeProduction)
@@ -61,7 +92,20 @@ func BuildLinux() error {
 
 	ldflags := "-X '" + strings.Join(xflags, "' -X '") + "'"
 
-	cmd := exec.Command("wails", "build", "-ldflags", ldflags, "-platform", "linux/amd64", "-tags", "webkit2_41")
+	args := []string{
+		"build",
+		"-ldflags", ldflags,
+		"-platform", "linux/amd64",
+		"-nogorebuild",
+	}
+
+	if webkitVersion, err := getWebkitGTKVersion(); err == nil && webkitVersion == "4.1" {
+		args = append(args, "-tags", "webkit2_41")
+	} else if err != nil {
+		return err
+	}
+
+	cmd := exec.Command("wails", args...)
 	cmd.Stdout = os.Stdout
 	return cmd.Run()
 }
