@@ -5,7 +5,6 @@ import { Injectable } from '@angular/core';
 })
 export class LanguageService {
 
-
   setLanguage(lang: string): void {
     window.location.href = window.location.href.replace(/wails:\/\/wails\/[a-z]{2}\//, `wails://wails/${lang}/`);
   }
