@@ -5,12 +5,7 @@ import { CommonModule } from '@angular/common';
   selector: 'app-home-page',
   standalone: true,
   imports: [CommonModule],
-  template: `
-    <div class="p-4">
-
-
-    </div>
-  `,
+  templateUrl: './home-page.component.html',
 })
 export class HomePageComponent {}
 

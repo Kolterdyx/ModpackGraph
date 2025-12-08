@@ -5,11 +5,7 @@ import { Card } from 'primeng/card';
   selector: 'app-card',
   standalone: true,
   imports: [Card],
-  template: `
-    <p-card [header]="header" [subheader]="subheader">
-      <ng-content />
-    </p-card>
-  `,
+  templateUrl: './app-card.component.html',
 })
 export class AppCardComponent {
   @Input() header?: string;

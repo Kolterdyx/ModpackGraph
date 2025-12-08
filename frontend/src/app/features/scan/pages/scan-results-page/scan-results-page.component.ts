@@ -8,17 +8,7 @@ import { Observable } from 'rxjs';
   selector: 'app-scan-results-page',
   standalone: true,
   imports: [CommonModule],
-  template: `
-    <div class="p-4">
-      <h1 class="text-2xl font-bold mb-4">Scan Results</h1>
-      <p class="mb-2">Path: {{ path$ | async }}</p>
-
-      <!-- TODO: Display scan results -->
-      <!-- TODO: Show mods list with AppDataTable -->
-      <!-- TODO: Cache statistics cards -->
-      <!-- TODO: New/updated/removed mods sections -->
-    </div>
-  `,
+  templateUrl: './scan-results-page.component.html',
 })
 export class ScanResultsPageComponent {
   path$: Observable<string>;

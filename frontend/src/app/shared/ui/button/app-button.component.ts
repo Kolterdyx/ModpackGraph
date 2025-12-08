@@ -2,15 +2,7 @@ import { Component, Input, Output, EventEmitter } from '@angular/core';
 
 import { Button } from 'primeng/button';
 @Component({
-  template: `<p-button
-      (onClick)="onClick.emit($event)"
-      [disabled]="disabled"
-      [type]="type"
-      [icon]="icon"
-      [loading]="loading"
-      [severity]="severity"
-      [label]="label"
-    />`,
+  templateUrl: './app-button.component.html',
   imports: [Button],
   standalone: true,
   selector: 'app-button',

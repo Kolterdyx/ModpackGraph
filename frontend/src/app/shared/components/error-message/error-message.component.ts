@@ -5,12 +5,7 @@ import { Message } from 'primeng/message';
   selector: 'app-error-message',
   standalone: true,
   imports: [Message],
-  template: `
-    <p-message
-      severity="error"
-      [text]="message"
-    />
-  `,
+  templateUrl: './error-message.component.html',
 })
 export class ErrorMessageComponent {
   @Input() message = 'An error occurred';

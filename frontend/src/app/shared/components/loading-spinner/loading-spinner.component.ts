@@ -5,11 +5,7 @@ import { ProgressSpinner } from 'primeng/progressspinner';
   selector: 'app-loading-spinner',
   standalone: true,
   imports: [ProgressSpinner],
-  template: `
-    <div class="flex justify-center items-center p-4">
-      <p-progressSpinner />
-    </div>
-  `,
+  templateUrl: './loading-spinner.component.html',
 })
 export class LoadingSpinnerComponent {}
 

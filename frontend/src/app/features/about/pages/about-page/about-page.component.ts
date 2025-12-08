@@ -5,18 +5,7 @@ import { CommonModule } from '@angular/common';
   selector: 'app-about-page',
   standalone: true,
   imports: [CommonModule],
-  template: `
-    <div class="p-4">
-      <h1 class="text-2xl font-bold mb-4">About ModpackGraph</h1>
-
-      <div class="space-y-2">
-        <p><strong>Version:</strong> 1.0.0</p>
-        <p><strong>Description:</strong> A tool for analyzing Minecraft modpack dependencies and conflicts.</p>
-
-        <!-- TODO: Add more app info, credits, links -->
-      </div>
-    </div>
-  `,
+  templateUrl: './about-page.component.html',
 })
 export class AboutPageComponent {}
 
