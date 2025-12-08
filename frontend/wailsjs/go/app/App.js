@@ -30,6 +30,10 @@ export function GetModpackStatus(arg1) {
   return window['go']['app']['App']['GetModpackStatus'](arg1);
 }
 
+export function OpenDirectoryDialog() {
+  return window['go']['app']['App']['OpenDirectoryDialog']();
+}
+
 export function QuickScan(arg1) {
   return window['go']['app']['App']['QuickScan'](arg1);
 }
