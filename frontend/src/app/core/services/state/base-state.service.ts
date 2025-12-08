@@ -4,7 +4,7 @@ import { AppConfigService } from '@core/config/app-config.service';
 export abstract class BaseStateService<T> {
   protected state$: BehaviorSubject<T>;
 
-  constructor(
+  protected constructor(
     protected storageKey: string,
     protected initialState: T,
     protected configService: AppConfigService

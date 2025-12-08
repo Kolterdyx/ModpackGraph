@@ -7,7 +7,7 @@ import { GraphAdapter } from '@core/graph/graph-adapter.interface';
 export class GraphAdapterFactory {
   private adapters = new Map<string, GraphAdapter>();
 
-  async createAdapter(type: '2d' | '3d' | 'list'): Promise<GraphAdapter> {
+  async createAdapter(type: '2d' | '3d'): Promise<GraphAdapter> {
     if (this.adapters.has(type)) {
       return this.adapters.get(type)!;
     }
@@ -23,11 +23,6 @@ export class GraphAdapterFactory {
       case '3d': {
         const { ForceGraph3DAdapter } = await import('./force-graph-3d.adapter');
         adapter = new ForceGraph3DAdapter();
-        break;
-      }
-      case 'list': {
-        const { GraphListAdapter } = await import('./graph-list.adapter');
-        adapter = new GraphListAdapter();
         break;
       }
       default:
