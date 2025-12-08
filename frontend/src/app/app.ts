@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, computed, signal } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
 import { Toast } from 'primeng/toast';
 import { Button } from 'primeng/button';
@@ -6,6 +6,7 @@ import { WailsEventsService } from '@core/services/wails';
 import { ConfirmDialog } from 'primeng/confirmdialog';
 import { ConfirmService } from '@services/confirm.service';
 import { switchMap } from 'rxjs';
+import { Tooltip } from 'primeng/tooltip';
 
 @Component({
   selector: 'app-root',
@@ -15,14 +16,16 @@ import { switchMap } from 'rxjs';
     Toast,
     Button,
     ConfirmDialog,
-    ConfirmDialog
+    ConfirmDialog,
+    Tooltip
   ],
   templateUrl: './app.html',
   styleUrl: './app.scss',
 })
 export class App {
 
-  protected isDarkTheme: boolean = true;
+  protected isDarkTheme = signal<boolean>(true);
+  protected themeChangeTooltip = computed(() => this.isDarkTheme() ? $localize`Switch to Light Theme` : $localize`Switch to Dark Theme`)
 
   constructor(
     eventService: WailsEventsService,
@@ -45,12 +48,12 @@ export class App {
   }
 
   protected toggleTheme(): void {
-    this.isDarkTheme = !this.isDarkTheme;
+    this.isDarkTheme.set(!this.isDarkTheme());
     this.setTheme();
   }
 
   private setTheme(): void {
-    if (this.isDarkTheme) {
+    if (this.isDarkTheme()) {
       document.documentElement.classList.add('dark');
     } else {
       document.documentElement.classList.remove('dark');
