@@ -2,6 +2,10 @@ import { Component } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
 import { Toast } from 'primeng/toast';
 import { Button } from 'primeng/button';
+import { WailsEventsService } from '@core/services/wails';
+import { ConfirmDialog } from 'primeng/confirmdialog';
+import { ConfirmService } from '@services/confirm.service';
+import { switchMap } from 'rxjs';
 
 @Component({
   selector: 'app-root',
@@ -9,7 +13,9 @@ import { Button } from 'primeng/button';
   imports: [
     RouterOutlet,
     Toast,
-    Button
+    Button,
+    ConfirmDialog,
+    ConfirmDialog
   ],
   templateUrl: './app.html',
   styleUrl: './app.scss',
@@ -18,8 +24,24 @@ export class App {
 
   protected isDarkTheme: boolean = true;
 
-  constructor() {
+  constructor(
+    eventService: WailsEventsService,
+    confirmService: ConfirmService,
+  ) {
     this.setTheme();
+    eventService
+      .on('on_before_close')
+      .pipe(switchMap(() => confirmService.confirm({
+        message: $localize`Are you sure you want to exit the application?`,
+        header: $localize`Exit Confirmation`,
+        acceptLabel: $localize`Exit`,
+        rejectLabel: $localize`Cancel`,
+      })))
+      .subscribe((confirmed) => {
+        if (confirmed !== undefined) {
+          eventService.emit('app_close_response', !confirmed); // Send false to close the app, true to cancel
+        }
+      });
   }
 
   protected toggleTheme(): void {
@@ -29,9 +51,9 @@ export class App {
 
   private setTheme(): void {
     if (this.isDarkTheme) {
-      document.body.classList.add('dark');
+      document.documentElement.classList.add('dark');
     } else {
-      document.body.classList.remove('dark');
+      document.documentElement.classList.remove('dark');
     }
   }
 }

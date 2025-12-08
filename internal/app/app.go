@@ -5,6 +5,7 @@ import (
 	"ModpackGraph/internal/services"
 	"context"
 	"fmt"
+	"github.com/labstack/gommon/log"
 
 	"github.com/wailsapp/wails/v2/pkg/runtime"
 )
@@ -17,6 +18,8 @@ type App struct {
 	dependencyService *services.DependencyService
 	conflictService   *services.ConflictService
 	cacheService      *services.CacheService
+
+	closeResult chan bool
 }
 
 // NewApp creates a new App instance with injected dependencies
@@ -39,6 +42,15 @@ func NewApp(
 // Startup is called when the app starts
 func (a *App) Startup(ctx context.Context) {
 	a.ctx = ctx
+	a.closeResult = make(chan bool)
+	runtime.EventsOn(a.ctx, "app_close_response", func(args ...interface{}) {
+		if len(args) == 0 {
+			a.closeResult <- false
+			return
+		}
+		shouldClose, ok := args[0].(bool)
+		a.closeResult <- ok && shouldClose
+	})
 }
 
 // ScanModpack performs an initial scan with hash computation and cache lookup
@@ -141,5 +153,18 @@ func (a *App) emitProgress(operation, message string, progress int) {
 			"message":   message,
 			"progress":  progress,
 		})
+	}
+}
+
+func (a *App) OnBeforeClose(ctx context.Context) bool {
+
+	runtime.EventsEmit(a.ctx, "on_before_close")
+
+	select {
+	case <-ctx.Done():
+		return false
+	case shouldClose := <-a.closeResult:
+		log.Debugf("OnBeforeClose result: %v", shouldClose)
+		return shouldClose
 	}
 }

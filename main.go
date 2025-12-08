@@ -82,6 +82,9 @@ func main() {
 			}()
 			application.Startup(ctx)
 		},
+		OnBeforeClose: func(ctx context.Context) (prevent bool) {
+			return application.OnBeforeClose(ctx)
+		},
 		OnShutdown: func(ctx context.Context) {
 			if err := fxApp.Stop(ctx); err != nil {
 				logger.GetLogger().WithError(err).Fatal("Failed to stop FX application")

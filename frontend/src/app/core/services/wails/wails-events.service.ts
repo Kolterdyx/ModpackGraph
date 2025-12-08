@@ -39,6 +39,18 @@ export class WailsEventsService {
     }).pipe(takeUntil(this.destroy$), share());
   }
 
+  on(eventName: string): Observable<any> {
+    return new Observable<any>((observer) => {
+      const cleanup = EventsOn(eventName, (data: any) => {
+        observer.next(data);
+      });
+
+      return () => {
+        cleanup();
+      };
+    }).pipe(takeUntil(this.destroy$), share());
+  }
+
   emit(eventName: string, ...data: any[]): void {
     EventsEmit(eventName, ...data);
   }

@@ -18,6 +18,8 @@ export function GetModMetadata(arg1:string):Promise<models.ModMetadata>;
 
 export function GetModpackStatus(arg1:string):Promise<services.ScanResult>;
 
+export function OnBeforeClose(arg1:context.Context):Promise<boolean>;
+
 export function OpenDirectoryDialog():Promise<string>;
 
 export function QuickScan(arg1:string):Promise<services.ScanResult>;

@@ -21,7 +21,7 @@ app-root {
 router-outlet + * {
   /* This selects the immediate component rendered by router-outlet */
   flex: 1 1 auto;
-  min-height: 0;   /* VERY important to prevent overflow */
+  min-height: 0; /* VERY important to prevent overflow */
 }
 
 h1 {
