@@ -23,26 +23,26 @@ func NewAnalysisService(scanService *ScanService, dependencyService *DependencyS
 
 // AnalysisReport represents the complete analysis results
 type AnalysisReport struct {
-	ScanResult       *ScanResult
-	DependencyResult *DependencyResult
-	Conflicts        []*models.Conflict
-	Summary          *AnalysisSummary
+	ScanResult       *ScanResult        `json:"scan_result"`
+	DependencyResult *DependencyResult  `json:"dependency_result"`
+	Conflicts        []*models.Conflict `json:"conflicts"`
+	Summary          *AnalysisSummary   `json:"summary"`
 }
 
 // AnalysisSummary provides high-level statistics
 type AnalysisSummary struct {
-	TotalMods            int
-	NewMods              int
-	UpdatedMods          int
-	RemovedMods          int
-	CacheHitRate         float64
-	MissingDependencies  int
-	VersionConflicts     int
-	CircularDependencies int
-	TotalConflicts       int
-	CriticalConflicts    int
-	WarningConflicts     int
-	InfoConflicts        int
+	TotalMods            int     `json:"total_mods"`
+	NewMods              int     `json:"new_mods"`
+	UpdatedMods          int     `json:"updated_mods"`
+	RemovedMods          int     `json:"removed_mods"`
+	CacheHitRate         float64 `json:"cache_hit_rate"`
+	MissingDependencies  int     `json:"missing_dependencies"`
+	VersionConflicts     int     `json:"version_conflicts"`
+	CircularDependencies int     `json:"circular_dependencies"`
+	TotalConflicts       int     `json:"total_conflicts"`
+	CriticalConflicts    int     `json:"critical_conflicts"`
+	WarningConflicts     int     `json:"warning_conflicts"`
+	InfoConflicts        int     `json:"info_conflicts"`
 }
 
 // AnalyzeModpack runs the complete analysis pipeline

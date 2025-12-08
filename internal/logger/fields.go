@@ -13,8 +13,8 @@ const (
 
 	TotalMods   = "total_mods"
 	NewMods     = "new_mods"
-	UpdatedMods = "UpdatedMods"
-	RemovedMods = "RemovedMods"
-	CacheHits   = "CacheHits"
-	CacheMisses = "CacheMisses"
+	UpdatedMods = "updated_mods"
+	RemovedMods = "removed_mods"
+	CacheHits   = "cache_hits"
+	CacheMisses = "cache_misses"
 )

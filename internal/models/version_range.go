@@ -9,8 +9,8 @@ import (
 
 // VersionRange represents a version constraint
 type VersionRange struct {
-	Raw        string // Original version string
-	Constraint *semver.Constraints
+	Raw        string              `json:"raw"` // Original version string
+	Constraint *semver.Constraints `json:"-"`
 }
 
 // NewVersionRange creates a new VersionRange from a constraint string

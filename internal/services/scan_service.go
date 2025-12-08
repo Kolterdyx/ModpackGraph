@@ -30,13 +30,13 @@ func NewScanService(cacheService *CacheService, modpackRepo *repository.ModpackR
 
 // ScanResult represents the result of scanning a modpack
 type ScanResult struct {
-	Modpack     *models.Modpack
-	Mods        []*models.ModMetadata
-	NewMods     []*models.ModMetadata
-	UpdatedMods []*models.ModMetadata
-	RemovedMods []*models.ModMetadata
-	CacheHits   int
-	CacheMisses int
+	Modpack     *models.Modpack       `json:"modpack"`
+	Mods        []*models.ModMetadata `json:"mods"`
+	NewMods     []*models.ModMetadata `json:"new_mods"`
+	UpdatedMods []*models.ModMetadata `json:"updated_mods"`
+	RemovedMods []*models.ModMetadata `json:"removed_mods"`
+	CacheHits   int                   `json:"cache_hits"`
+	CacheMisses int                   `json:"cache_misses"`
 }
 
 // ScanModpack scans a modpack directory for JAR files

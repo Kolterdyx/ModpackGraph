@@ -6,6 +6,7 @@ import (
 	"ModpackGraph/internal/di"
 	"ModpackGraph/internal/enums"
 	"ModpackGraph/internal/logger"
+	"ModpackGraph/internal/models"
 	"ModpackGraph/internal/util"
 	"bytes"
 	"context"
@@ -68,6 +69,13 @@ func main() {
 		AssetServer:      getAssetServerOptions(),
 		BackgroundColour: &options.RGBA{R: 0, G: 0, B: 0, A: 255},
 		Bind:             []any{application},
+		EnumBind: []any{
+			models.AllLoaderTypes,
+			models.AllEnvironments,
+			models.AllConflictTypes,
+			models.AllConflictSeverities,
+			models.AllFeatureTypes,
+		},
 		Linux: &linux.Options{
 			WindowIsTranslucent: true,
 		},

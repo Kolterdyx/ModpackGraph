@@ -2,173 +2,67 @@
 <xliff version="1.2" xmlns="urn:oasis:names:tc:xliff:document:1.2">
   <file source-language="en" datatype="plaintext" original="ng2.template">
     <body>
-      <trans-unit id="5324833194542170030" datatype="html">
-        <source>Modpack selection</source>
-        <context-group purpose="location">
-          <context context-type="sourcefile">src/app/app.html</context>
-          <context context-type="linenumber">5,6</context>
-        </context-group>
-      </trans-unit>
-      <trans-unit id="7305209459049263324" datatype="html">
-        <source>Select mods folder</source>
-        <context-group purpose="location">
-          <context context-type="sourcefile">src/app/app.html</context>
-          <context context-type="linenumber">11,12</context>
-        </context-group>
-      </trans-unit>
-      <trans-unit id="5211344313626923071" datatype="html">
-        <source>Process selected folder</source>
-        <context-group purpose="location">
-          <context context-type="sourcefile">src/app/app.html</context>
-          <context context-type="linenumber">18,19</context>
-        </context-group>
-      </trans-unit>
-      <trans-unit id="8224840499457712510" datatype="html">
-        <source>Graph display options</source>
-        <context-group purpose="location">
-          <context context-type="sourcefile">src/app/app.html</context>
-          <context context-type="linenumber">23,24</context>
-        </context-group>
-      </trans-unit>
-      <trans-unit id="5908089622110794845" datatype="html">
-        <source>Show mod icons</source>
-        <context-group purpose="location">
-          <context context-type="sourcefile">src/app/app.html</context>
-          <context context-type="linenumber">26,27</context>
-        </context-group>
-      </trans-unit>
-      <trans-unit id="1074120317985020884" datatype="html">
-        <source>List display options</source>
-        <context-group purpose="location">
-          <context context-type="sourcefile">src/app/app.html</context>
-          <context context-type="linenumber">32,33</context>
-        </context-group>
-      </trans-unit>
-      <trans-unit id="6882405256305741381" datatype="html">
-        <source>Show required mods</source>
-        <context-group purpose="location">
-          <context context-type="sourcefile">src/app/app.html</context>
-          <context context-type="linenumber">35,36</context>
-        </context-group>
-      </trans-unit>
-      <trans-unit id="5092275673173462575" datatype="html">
-        <source>Show optional mods</source>
-        <context-group purpose="location">
-          <context context-type="sourcefile">src/app/app.html</context>
-          <context context-type="linenumber">37,38</context>
-        </context-group>
-      </trans-unit>
-      <trans-unit id="6173843853615288373" datatype="html">
-        <source>Show installed mods</source>
-        <context-group purpose="location">
-          <context context-type="sourcefile">src/app/app.html</context>
-          <context context-type="linenumber">39,40</context>
-        </context-group>
-      </trans-unit>
-      <trans-unit id="487077452159084336" datatype="html">
-        <source>Select Language</source>
-        <context-group purpose="location">
-          <context context-type="sourcefile">src/app/app.html</context>
-          <context context-type="linenumber">45,46</context>
-        </context-group>
-      </trans-unit>
-      <trans-unit id="7387382518119780362" datatype="html">
-        <source>List View</source>
+      <trans-unit id="4795995068982648432" datatype="html">
+        <source>Switch to Light Theme</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/app.ts</context>
-          <context context-type="linenumber">58</context>
+          <context context-type="linenumber">31</context>
         </context-group>
       </trans-unit>
-      <trans-unit id="4260072295906322588" datatype="html">
-        <source>2D Interactive</source>
+      <trans-unit id="7265672402475519420" datatype="html">
+        <source>Switch to Dark Theme</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/app.ts</context>
-          <context context-type="linenumber">63</context>
+          <context context-type="linenumber">31</context>
         </context-group>
       </trans-unit>
-      <trans-unit id="7565532077551931831" datatype="html">
-        <source>3D Interactive</source>
+      <trans-unit id="7347014838515976212" datatype="html">
+        <source>Are you sure you want to exit the application?</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/app.ts</context>
-          <context context-type="linenumber">68</context>
+          <context context-type="linenumber">46</context>
         </context-group>
       </trans-unit>
-      <trans-unit id="2923549769256759439" datatype="html">
-        <source>Generating graph</source>
+      <trans-unit id="7235948023809297581" datatype="html">
+        <source>Exit Confirmation</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/app.ts</context>
-          <context context-type="linenumber">136</context>
+          <context context-type="linenumber">47</context>
         </context-group>
       </trans-unit>
-      <trans-unit id="7556049256956177156" datatype="html">
-        <source>Generating graph...</source>
+      <trans-unit id="5045200874122539692" datatype="html">
+        <source>Exit</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/app.ts</context>
-          <context context-type="linenumber">136</context>
+          <context context-type="linenumber">48</context>
         </context-group>
       </trans-unit>
-      <trans-unit id="7960975128324978084" datatype="html">
-        <source>Graph generated</source>
+      <trans-unit id="2159130950882492111" datatype="html">
+        <source>Cancel</source>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/app.ts</context>
-          <context context-type="linenumber">139</context>
+          <context context-type="linenumber">49</context>
         </context-group>
       </trans-unit>
-      <trans-unit id="9129802106669787774" datatype="html">
-        <source>Graph generated successfully.</source>
+      <trans-unit id="1234709746630139322" datatype="html">
+        <source>Confirmation</source>
         <context-group purpose="location">
-          <context context-type="sourcefile">src/app/app.ts</context>
-          <context context-type="linenumber">139</context>
+          <context context-type="sourcefile">src/app/core/services/confirm.service.ts</context>
+          <context context-type="linenumber">24</context>
         </context-group>
       </trans-unit>
-      <trans-unit id="460799937634193265" datatype="html">
-        <source>Something went wrong.</source>
+      <trans-unit id="2807800733729323332" datatype="html">
+        <source>Yes</source>
         <context-group purpose="location">
-          <context context-type="sourcefile">src/app/app.ts</context>
-          <context context-type="linenumber">141</context>
+          <context context-type="sourcefile">src/app/core/services/confirm.service.ts</context>
+          <context context-type="linenumber">25</context>
         </context-group>
       </trans-unit>
-      <trans-unit id="4167530769438456521" datatype="html">
-        <source>Required: <x id="PH" equiv-text="link.label"/></source>
+      <trans-unit id="3542042671420335679" datatype="html">
+        <source>No</source>
         <context-group purpose="location">
-          <context context-type="sourcefile">src/app/components/tabs/interactive-three-tab/interactive-three-tab.ts</context>
-          <context context-type="linenumber">86</context>
-        </context-group>
-        <context-group purpose="location">
-          <context context-type="sourcefile">src/app/components/tabs/interactive-two-tab/interactive-two-tab.ts</context>
-          <context context-type="linenumber">81</context>
-        </context-group>
-      </trans-unit>
-      <trans-unit id="8322554591663562651" datatype="html">
-        <source>Optional: <x id="PH" equiv-text="link.label"/></source>
-        <context-group purpose="location">
-          <context context-type="sourcefile">src/app/components/tabs/interactive-three-tab/interactive-three-tab.ts</context>
-          <context context-type="linenumber">86</context>
-        </context-group>
-        <context-group purpose="location">
-          <context context-type="sourcefile">src/app/components/tabs/interactive-two-tab/interactive-two-tab.ts</context>
-          <context context-type="linenumber">81</context>
-        </context-group>
-      </trans-unit>
-      <trans-unit id="9015896454134824142" datatype="html">
-        <source>Version: <x id="INTERPOLATION" equiv-text="{{mod.presentVersion}}"/></source>
-        <context-group purpose="location">
-          <context context-type="sourcefile">src/app/components/tabs/list-tab/list-tab.html</context>
-          <context context-type="linenumber">18</context>
-        </context-group>
-      </trans-unit>
-      <trans-unit id="5714691469458385353" datatype="html">
-        <source>Requires: <x id="INTERPOLATION" equiv-text="{{mod.requiredVersion}}"/></source>
-        <context-group purpose="location">
-          <context context-type="sourcefile">src/app/components/tabs/list-tab/list-tab.html</context>
-          <context context-type="linenumber">20</context>
-        </context-group>
-      </trans-unit>
-      <trans-unit id="1330970253223665354" datatype="html">
-        <source>Optional: <x id="INTERPOLATION" equiv-text="{{mod.requiredVersion}}"/></source>
-        <context-group purpose="location">
-          <context context-type="sourcefile">src/app/components/tabs/list-tab/list-tab.html</context>
-          <context context-type="linenumber">22</context>
+          <context context-type="sourcefile">src/app/core/services/confirm.service.ts</context>
+          <context context-type="linenumber">30</context>
         </context-group>
       </trans-unit>
     </body>

@@ -1,8 +1,41 @@
 export namespace models {
 	
+	export enum LoaderType {
+	    fabric = "fabric",
+	    forge_modern = "forge_modern",
+	    forge_legacy = "forge_legacy",
+	    neoforge = "neoforge",
+	    quilt = "quilt",
+	}
+	export enum Environment {
+	    client = "client",
+	    server = "server",
+	    both = "both",
+	}
+	export enum ConflictType {
+	    missing_dependency = "missing_dependency",
+	    version_conflict = "version_conflict",
+	    known_incompatible = "known_incompatible",
+	    feature_overlap = "feature_overlap",
+	    environment_mismatch = "environment_mismatch",
+	    circular_dependency = "circular_dependency",
+	}
+	export enum ConflictSeverity {
+	    critical = "critical",
+	    warning = "warning",
+	    info = "info",
+	}
+	export enum FeatureType {
+	    world_generation = "world_generation",
+	    entities = "entities",
+	    items = "items",
+	    blocks = "blocks",
+	    mechanics = "mechanics",
+	    recipes = "recipes",
+	}
 	export interface Conflict {
-	    type: string;
-	    severity: string;
+	    type: ConflictType;
+	    severity: ConflictSeverity;
 	    description: string;
 	    affected_mods: string[];
 	    details?: Record<string, any>;
@@ -11,13 +44,12 @@ export namespace models {
 	    id: number;
 	    mod_id_a: string;
 	    mod_id_b: string;
-	    conflict_type: string;
+	    conflict_type: ConflictType;
 	    description: string;
-	    severity: string;
+	    severity: ConflictSeverity;
 	}
 	export interface VersionRange {
-	    Raw: string;
-	    Constraint?: semver.Constraints;
+	    raw: string;
 	}
 	export interface Dependency {
 	    mod_id: string;
@@ -52,8 +84,8 @@ export namespace models {
 	    name: string;
 	    description: string;
 	    authors: string[];
-	    loader_type: string;
-	    environment: string;
+	    loader_type: LoaderType;
+	    environment: Environment;
 	    icon_data?: string;
 	    dependencies: Dependency[];
 	    metadata_json?: string;
@@ -85,54 +117,54 @@ export namespace semver {
 export namespace services {
 	
 	export interface AnalysisSummary {
-	    TotalMods: number;
-	    NewMods: number;
-	    UpdatedMods: number;
-	    RemovedMods: number;
-	    CacheHitRate: number;
-	    MissingDependencies: number;
-	    VersionConflicts: number;
-	    CircularDependencies: number;
-	    TotalConflicts: number;
-	    CriticalConflicts: number;
-	    WarningConflicts: number;
-	    InfoConflicts: number;
+	    total_mods: number;
+	    new_mods: number;
+	    updated_mods: number;
+	    removed_mods: number;
+	    cache_hit_rate: number;
+	    missing_dependencies: number;
+	    version_conflicts: number;
+	    circular_dependencies: number;
+	    total_conflicts: number;
+	    critical_conflicts: number;
+	    warning_conflicts: number;
+	    info_conflicts: number;
 	}
 	export interface VersionConflict {
-	    ModID: string;
-	    ModName: string;
-	    DependencyID: string;
-	    DependencyName: string;
-	    RequiredRange: string;
-	    ActualVersion: string;
+	    mod_id: string;
+	    mod_name: string;
+	    dependency_id: string;
+	    dependency_name: string;
+	    required_range: string;
+	    actual_version: string;
 	}
 	export interface MissingDependency {
-	    ModID: string;
-	    ModName: string;
-	    DependencyID: string;
-	    Required: boolean;
-	    VersionRange: string;
+	    mod_id: string;
+	    mod_name: string;
+	    dependency_id: string;
+	    required: boolean;
+	    version_range: string;
 	}
 	export interface DependencyResult {
-	    Graph?: models.Graph;
-	    MissingDependencies: MissingDependency[];
-	    VersionConflicts: VersionConflict[];
-	    CircularDeps: string[][];
+	    graph?: models.Graph;
+	    missing_dependencies: MissingDependency[];
+	    version_conflicts: VersionConflict[];
+	    circular_dependencies: string[][];
 	}
 	export interface ScanResult {
-	    Modpack?: models.Modpack;
-	    Mods: models.ModMetadata[];
-	    NewMods: models.ModMetadata[];
-	    UpdatedMods: models.ModMetadata[];
-	    RemovedMods: models.ModMetadata[];
-	    CacheHits: number;
-	    CacheMisses: number;
+	    modpack?: models.Modpack;
+	    mods: models.ModMetadata[];
+	    new_mods: models.ModMetadata[];
+	    updated_mods: models.ModMetadata[];
+	    removed_mods: models.ModMetadata[];
+	    cache_hits: number;
+	    cache_misses: number;
 	}
 	export interface AnalysisReport {
-	    ScanResult?: ScanResult;
-	    DependencyResult?: DependencyResult;
-	    Conflicts: models.Conflict[];
-	    Summary?: AnalysisSummary;
+	    scan_result?: ScanResult;
+	    dependency_result?: DependencyResult;
+	    conflicts: models.Conflict[];
+	    summary?: AnalysisSummary;
 	}
 	
 	

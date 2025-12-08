@@ -12,6 +12,19 @@ const (
 	ConflictTypeCircularDependency  ConflictType = "circular_dependency"
 )
 
+var AllConflictTypes = []ConflictType{
+	ConflictTypeMissingDependency,
+	ConflictTypeVersionConflict,
+	ConflictTypeKnownIncompatible,
+	ConflictTypeFeatureOverlap,
+	ConflictTypeEnvironmentMismatch,
+	ConflictTypeCircularDependency,
+}
+
+func (c ConflictType) TSName() string {
+	return string(c)
+}
+
 // ConflictSeverity represents how severe a conflict is
 type ConflictSeverity string
 
@@ -20,6 +33,16 @@ const (
 	ConflictSeverityWarning  ConflictSeverity = "warning"
 	ConflictSeverityInfo     ConflictSeverity = "info"
 )
+
+var AllConflictSeverities = []ConflictSeverity{
+	ConflictSeverityCritical,
+	ConflictSeverityWarning,
+	ConflictSeverityInfo,
+}
+
+func (c ConflictSeverity) TSName() string {
+	return string(c)
+}
 
 // Conflict represents a detected conflict between mods
 type Conflict struct {

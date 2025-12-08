@@ -11,7 +11,19 @@ const (
 	LoaderTypeQuilt       LoaderType = "quilt"
 )
 
+var AllLoaderTypes = []LoaderType{
+	LoaderTypeFabric,
+	LoaderTypeForgeModern,
+	LoaderTypeForgeLegacy,
+	LoaderTypeNeoForge,
+	LoaderTypeQuilt,
+}
+
 // String returns the string representation of the loader type
 func (l LoaderType) String() string {
 	return string(l)
+}
+
+func (l LoaderType) TSName() string {
+	return l.String()
 }

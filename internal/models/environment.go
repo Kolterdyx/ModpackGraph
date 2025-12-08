@@ -9,6 +9,16 @@ const (
 	EnvironmentBoth   Environment = "both"
 )
 
+var AllEnvironments = []Environment{
+	EnvironmentClient,
+	EnvironmentServer,
+	EnvironmentBoth,
+}
+
+func (e Environment) TSName() string {
+	return string(e)
+}
+
 // String returns the string representation of the environment
 func (e Environment) String() string {
 	return string(e)

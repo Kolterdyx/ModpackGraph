@@ -14,29 +14,29 @@ func NewDependencyService() *DependencyService {
 
 // DependencyResult represents the result of dependency analysis
 type DependencyResult struct {
-	Graph               *models.Graph
-	MissingDependencies []*MissingDependency
-	VersionConflicts    []*VersionConflict
-	CircularDeps        [][]string
+	Graph               *models.Graph        `json:"graph"`
+	MissingDependencies []*MissingDependency `json:"missing_dependencies"`
+	VersionConflicts    []*VersionConflict   `json:"version_conflicts"`
+	CircularDeps        [][]string           `json:"circular_dependencies"`
 }
 
 // MissingDependency represents a missing dependency
 type MissingDependency struct {
-	ModID        string
-	ModName      string
-	DependencyID string
-	Required     bool
-	VersionRange string
+	ModID        string `json:"mod_id"`
+	ModName      string `json:"mod_name"`
+	DependencyID string `json:"dependency_id"`
+	Required     bool   `json:"required"`
+	VersionRange string `json:"version_range"`
 }
 
 // VersionConflict represents a version conflict
 type VersionConflict struct {
-	ModID          string
-	ModName        string
-	DependencyID   string
-	DependencyName string
-	RequiredRange  string
-	ActualVersion  string
+	ModID          string `json:"mod_id"`
+	ModName        string `json:"mod_name"`
+	DependencyID   string `json:"dependency_id"`
+	DependencyName string `json:"dependency_name"`
+	RequiredRange  string `json:"required_range"`
+	ActualVersion  string `json:"actual_version"`
 }
 
 // Analyze analyzes dependencies for a set of mods

@@ -1,4 +1,23 @@
 <div class="p-4">
   <h1>Home</h1>
+
+  <p-tree-table [value]="modTree">
+    <ng-template pTemplate="header">
+      <tr>
+        <th>Name</th>
+        <th>Version</th>
+      </tr>
+    </ng-template>
+    <ng-template pTemplate="body" let-rowNode let-rowData="rowData">
+      <tr>
+        <td>
+          <p-treeTableToggler [rowNode]="rowNode"></p-treeTableToggler>
+          {{ rowData.name }}
+        </td>
+        <td>{{ rowData.size }}</td>
+        <td>{{ rowData.type }}</td>
+      </tr>
+    </ng-template>
+  </p-tree-table>
 </div>
 
