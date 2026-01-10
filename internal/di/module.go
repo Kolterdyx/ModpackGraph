@@ -22,12 +22,12 @@ var Module = fx.Options(
 
 	// Loader services
 	fx.Provide(
-		loaders.NewLoaderRegistry,
-		loaders.NewIconExtractor,
 		fx.Annotate(loaders.NewFabricLoader, fx.ResultTags(`group:"mod_loader"`)),
 		fx.Annotate(loaders.NewForgeModernLoader, fx.ResultTags(`group:"mod_loader"`)),
 		fx.Annotate(loaders.NewForgeLegacyLoader, fx.ResultTags(`group:"mod_loader"`)),
 		fx.Annotate(loaders.NewNeoForgeLoader, fx.ResultTags(`group:"mod_loader"`)),
+		loaders.NewIconExtractor,
+		loaders.NewLoaderRegistry,
 	),
 
 	// Core services

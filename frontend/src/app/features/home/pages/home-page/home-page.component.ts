@@ -2,7 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { TreeTableModule } from 'primeng/treetable';
 import { TreeNode } from 'primeng/api';
-import { WailsAppService } from '@core/services/wails';
+import { AnalysisService } from '@core/services/analysis.service';
 
 @Component({
   selector: 'app-home-page',
@@ -14,19 +14,30 @@ export class HomePageComponent implements OnInit {
   protected modTree: TreeNode<any>[] = [];
 
   constructor(
-    private readonly wailsAppService: WailsAppService
-  ) {}
-
-  ngOnInit(): void {
-    this.wailsAppService.scanModpack("/home/kolterdyx/GolandProjects/ModpackGraph/mods").subscribe((data) => {
-      for (const mod of data.mods) {
-        this.modTree.push({
-          data: mod,
-          children: [],
-        });
-      }
-    })
+    private readonly analysisService: AnalysisService,
+  ) {
   }
 
+  ngOnInit(): void {
+    this.analysisService.quickScan("/home/kolterdyx/GolandProjects/ModpackGraph/mods")
+      .subscribe((result) => {
+        result.mods.forEach(mod => {
+          this.modTree.push({
+            data: {
+              name: mod.name,
+              version: mod.version,
+              id: mod.id,
+            },
+            children: mod.dependencies.map(dep => ({
+              data: {
+                name: dep.mod_id,
+                version: dep.version_range,
+                id: dep.mod_id,
+              }
+            })),
+          })
+        })
+      });
+  }
 }
 

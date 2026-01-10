@@ -2,6 +2,7 @@ package loaders
 
 import (
 	"ModpackGraph/internal/assets"
+	"ModpackGraph/internal/logger"
 	"ModpackGraph/internal/models"
 	"archive/zip"
 	"fmt"
@@ -19,7 +20,7 @@ type ForgeModernLoader struct {
 // NewForgeModernLoader creates a new ForgeModernLoader
 func NewForgeModernLoader(
 	iconExtractor IconExtractor,
-) *ForgeModernLoader {
+) ModLoader {
 	return &ForgeModernLoader{
 		iconExtractor: iconExtractor,
 	}
@@ -27,6 +28,7 @@ func NewForgeModernLoader(
 
 // CanHandle checks if this is a modern Forge mod
 func (fml *ForgeModernLoader) CanHandle(zipReader *zip.Reader) bool {
+	logger.GetLogger().Debugf("Checking for Forge modern mod...")
 	for _, f := range zipReader.File {
 		if f.Name == "META-INF/mods.toml" {
 			return true
@@ -37,6 +39,12 @@ func (fml *ForgeModernLoader) CanHandle(zipReader *zip.Reader) bool {
 
 // ExtractMetadata extracts metadata from a modern Forge mod
 func (fml *ForgeModernLoader) ExtractMetadata(zipReader *zip.Reader, jarPath string) (*models.ModMetadata, error) {
+	log := logger.GetLogger()
+	defer func() {
+		if r := recover(); r != nil {
+			log.Errorf("Recovered in ExtractMetadata of ForgeModernLoader: %v", r)
+		}
+	}()
 	// Find mods.toml
 	var modsToml *zip.File
 	for _, f := range zipReader.File {
@@ -46,6 +54,7 @@ func (fml *ForgeModernLoader) ExtractMetadata(zipReader *zip.Reader, jarPath str
 		}
 	}
 
+	log.Warnf("TRACE 1")
 	if modsToml == nil {
 		return nil, fmt.Errorf("META-INF/mods.toml not found")
 	}
@@ -57,6 +66,7 @@ func (fml *ForgeModernLoader) ExtractMetadata(zipReader *zip.Reader, jarPath str
 	}
 	defer rc.Close()
 
+	log.Warnf("TRACE 2")
 	data, err := io.ReadAll(rc)
 	if err != nil {
 		return nil, fmt.Errorf("failed to read mods.toml: %w", err)
@@ -67,19 +77,21 @@ func (fml *ForgeModernLoader) ExtractMetadata(zipReader *zip.Reader, jarPath str
 		return nil, fmt.Errorf("failed to parse mods.toml: %w", err)
 	}
 
+	log.Warnf("TRACE 2.1")
 	// Get the first mod entry (most mods.toml files have one mod)
 	if len(forgeMod.Mods) == 0 {
 		return nil, fmt.Errorf("no mods defined in mods.toml")
 	}
-
+	log.Warnf("TRACE 3")
 	mod := forgeMod.Mods[0]
-
+	log.Warnf("TRACE 4")
 	// Handle version placeholders
 	version := mod.Version
 	if strings.Contains(version, "${") {
 		version = fml.resolveVersionPlaceholder(zipReader, version)
 	}
 
+	log.Warnf("TRACE 5")
 	// Create ModMetadata
 	metadata := models.NewModMetadata()
 	metadata.ID = mod.ModID
@@ -104,17 +116,21 @@ func (fml *ForgeModernLoader) ExtractMetadata(zipReader *zip.Reader, jarPath str
 		}
 	}
 
+	log.Warnf("TRACE 6")
 	// Extract dependencies
 	metadata.Dependencies = fml.extractDependencies(forgeMod.Dependencies, metadata.ID)
 
+	log.Warnf("TRACE  7")
 	// Extract icon
 	if mod.LogoFile != "" {
 		metadata.IconData = fml.extractIconFromPath(zipReader, mod.LogoFile)
 	}
+	log.Warnf("TRACE  8")
 	if metadata.IconData == "" {
 		metadata.IconData = fml.iconExtractor.ExtractWithFallback(zipReader, metadata.ID, assets.DefaultModIconData)
 	}
 
+	log.Warnf("TRACE  9")
 	return metadata, nil
 }
 

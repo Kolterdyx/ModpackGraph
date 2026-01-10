@@ -2,6 +2,7 @@ package loaders
 
 import (
 	"ModpackGraph/internal/assets"
+	"ModpackGraph/internal/logger"
 	"ModpackGraph/internal/models"
 	"archive/zip"
 	"encoding/json"
@@ -17,7 +18,7 @@ type FabricLoader struct {
 // NewFabricLoader creates a new FabricLoader
 func NewFabricLoader(
 	iconExtractor IconExtractor,
-) *FabricLoader {
+) ModLoader {
 	return &FabricLoader{
 		iconExtractor: iconExtractor,
 	}
@@ -25,6 +26,7 @@ func NewFabricLoader(
 
 // CanHandle checks if this is a Fabric mod
 func (fl *FabricLoader) CanHandle(zipReader *zip.Reader) bool {
+	logger.GetLogger().Debugf("Checking for Fabric mod...")
 	for _, f := range zipReader.File {
 		if f.Name == "fabric.mod.json" {
 			return true
@@ -60,7 +62,7 @@ func (fl *FabricLoader) ExtractMetadata(zipReader *zip.Reader, jarPath string) (
 		return nil, fmt.Errorf("failed to read fabric.mod.json: %w", err)
 	}
 
-	var fabricMod FabricModJSON
+	var fabricMod FabricModJSONV1
 	if err := json.Unmarshal(data, &fabricMod); err != nil {
 		return nil, fmt.Errorf("failed to parse fabric.mod.json: %w", err)
 	}
@@ -104,7 +106,7 @@ func (fl *FabricLoader) ExtractMetadata(zipReader *zip.Reader, jarPath string) (
 }
 
 // extractDependencies extracts dependencies from Fabric mod metadata
-func (fl *FabricLoader) extractDependencies(fabricMod FabricModJSON, modID string) []*models.Dependency {
+func (fl *FabricLoader) extractDependencies(fabricMod FabricModJSONV1, modID string) []*models.Dependency {
 	deps := make([]*models.Dependency, 0)
 
 	// Required dependencies (depends)
@@ -152,13 +154,13 @@ func (fl *FabricLoader) extractIconFromPath(zipReader *zip.Reader, iconPath stri
 }
 
 // mapFabricEnvironment maps Fabric environment to our model
-func mapFabricEnvironment(env string) models.Environment {
+func mapFabricEnvironment(env FabricV1Environment) models.Environment {
 	switch env {
-	case "client":
+	case FabricV1EnvironmentClient:
 		return models.EnvironmentClient
-	case "server":
+	case FabricV1EnvironmentServer:
 		return models.EnvironmentServer
-	case "*", "":
+	case FabricV1EnvironmentUniversal:
 		return models.EnvironmentBoth
 	default:
 		return models.EnvironmentBoth
@@ -193,27 +195,31 @@ func parseVersionConstraint(constraint interface{}) (*models.VersionRange, error
 	return models.NewVersionRange(constraintStr)
 }
 
-// FabricModJSON represents the structure of fabric.mod.json
-type FabricModJSON struct {
-	SchemaVersion int                    `json:"schemaVersion"`
-	ID            string                 `json:"id"`
-	Version       string                 `json:"version"`
-	Name          string                 `json:"name"`
-	Description   string                 `json:"description"`
-	Authors       []FabricAuthor         `json:"authors"`
-	Contact       map[string]string      `json:"contact"`
-	License       interface{}            `json:"license"` // Can be string or array
-	Icon          string                 `json:"icon"`
-	Environment   string                 `json:"environment"`
-	Depends       map[string]interface{} `json:"depends"`
-	Recommends    map[string]interface{} `json:"recommends"`
-	Suggests      map[string]interface{} `json:"suggests"`
-	Breaks        map[string]interface{} `json:"breaks"`
-	Conflicts     map[string]interface{} `json:"conflicts"`
+type FabricBaseJSON struct {
+	SchemaVersion int `json:"schemaVersion"`
 }
 
-// FabricAuthor represents an author entry
-type FabricAuthor struct {
-	Name    string            `json:"name"`
-	Contact map[string]string `json:"contact"`
+// FabricModJSONV1 represents the structure of fabric.mod.json
+type FabricModJSONV1 struct {
+	FabricBaseJSON
+	ID            string                            `json:"id"`
+	Version       string                            `json:"version"`
+	Provides      []string                          `json:"provides"`
+	Environment   FabricV1Environment               `json:"environment"`
+	Entrypoints   map[string][]FabricV1Entrypoint   `json:"entrypoints"`
+	Jars          []FabricV1JarEntry                `json:"jars"`
+	Mixins        []FabricV1MixinEntry              `json:"mixins"`
+	AccessWidener string                            `json:"accessWidener"`
+	Depends       map[string]FabricV1VersionMatcher `json:"depends"`
+	Recommends    map[string]FabricV1VersionMatcher `json:"recommends"`
+	Suggests      map[string]FabricV1VersionMatcher `json:"suggests"`
+	Conflicts     map[string]FabricV1VersionMatcher `json:"conflicts"`
+	Breaks        map[string]FabricV1VersionMatcher `json:"breaks"`
+	Requires      []string                          `json:"requires"`
+	Name          string                            `json:"name"`
+	Description   string                            `json:"description"`
+	Authors       []FabricV1Person                  `json:"authors"`
+	Contributors  []FabricV1Person                  `json:"contributors"`
+	Contact       map[string]string                 `json:"contact"`
+	Icon          string                            `json:"icon"`
 }

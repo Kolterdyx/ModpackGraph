@@ -1,6 +1,7 @@
 package loaders
 
 import (
+	"ModpackGraph/internal/logger"
 	"ModpackGraph/internal/models"
 	"archive/zip"
 	"fmt"
@@ -26,6 +27,7 @@ func NewLoaderRegistry(p loaderRegistryParams) *LoaderRegistry {
 
 // DetectLoader finds the appropriate loader for a JAR
 func (lr *LoaderRegistry) DetectLoader(zipReader *zip.Reader) (ModLoader, error) {
+	logger.GetLogger().Debugf("Detecting mod loader, checking %d loaders...", len(lr.loaders))
 	for _, loader := range lr.loaders {
 		if loader.CanHandle(zipReader) {
 			return loader, nil

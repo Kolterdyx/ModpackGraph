@@ -42,6 +42,25 @@ func (r *ModRepository) GetByID(id string) (*models.ModMetadata, error) {
 		&metadata.CreatedAt,
 		&metadata.UpdatedAt,
 	)
+	rows, err := r.db.Query(query, id)
+	for rows.Next() {
+		err := rows.Scan(
+			&metadata.ID,
+			&metadata.Hash,
+			&metadata.Version,
+			&metadata.Name,
+			&description,
+			&metadata.LoaderType,
+			&metadata.Environment,
+			&iconData,
+			&metadataJSON,
+			&metadata.CreatedAt,
+			&metadata.UpdatedAt,
+		)
+		if err != nil {
+			return nil, fmt.Errorf("failed to scan mod row: %w", err)
+		}
+	}
 
 	if err == sql.ErrNoRows {
 		return nil, nil

@@ -62,13 +62,20 @@ func main() {
 		fx.Populate(&application),
 	)
 
+	if err := fxApp.Start(context.Background()); err != nil {
+		logger.GetLogger().WithError(err).Fatal("Failed to start FX application")
+		return
+	}
+
 	err := wails.Run(&options.App{
 		Title:            "ModpackGraph",
 		Width:            1024,
 		Height:           768,
 		AssetServer:      getAssetServerOptions(),
 		BackgroundColour: &options.RGBA{R: 0, G: 0, B: 0, A: 255},
-		Bind:             []any{application},
+		Bind: []any{
+			application,
+		},
 		EnumBind: []any{
 			models.AllLoaderTypes,
 			models.AllEnvironments,
@@ -83,11 +90,6 @@ func main() {
 			WindowIsTranslucent: true,
 		},
 		OnStartup: func(ctx context.Context) {
-			go func() {
-				if err := fxApp.Start(ctx); err != nil {
-					logger.GetLogger().WithError(err).Fatal("Failed to start FX application")
-				}
-			}()
 			application.Startup(ctx)
 		},
 		OnBeforeClose: func(ctx context.Context) (prevent bool) {

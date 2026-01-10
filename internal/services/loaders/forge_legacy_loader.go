@@ -2,6 +2,7 @@ package loaders
 
 import (
 	"ModpackGraph/internal/assets"
+	"ModpackGraph/internal/logger"
 	"ModpackGraph/internal/models"
 	"archive/zip"
 	"encoding/json"
@@ -18,7 +19,7 @@ type ForgeLegacyLoader struct {
 // NewForgeLegacyLoader creates a new ForgeLegacyLoader
 func NewForgeLegacyLoader(
 	iconExtractor IconExtractor,
-) *ForgeLegacyLoader {
+) ModLoader {
 	return &ForgeLegacyLoader{
 		iconExtractor: iconExtractor,
 	}
@@ -26,6 +27,7 @@ func NewForgeLegacyLoader(
 
 // CanHandle checks if this is a legacy Forge mod
 func (fll *ForgeLegacyLoader) CanHandle(zipReader *zip.Reader) bool {
+	logger.GetLogger().Debugf("Checking for Forge legacy mod...")
 	for _, f := range zipReader.File {
 		if f.Name == "mcmod.info" {
 			return true

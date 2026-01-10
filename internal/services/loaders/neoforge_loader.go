@@ -8,19 +8,23 @@ import (
 // NeoForgeLoader handles NeoForge mod metadata extraction
 // Currently uses the same format as modern Forge
 type NeoForgeLoader struct {
-	*ForgeModernLoader
+	loader ModLoader
 }
 
 // NewNeoForgeLoader creates a new NeoForgeLoader
-func NewNeoForgeLoader(f *ForgeModernLoader) *NeoForgeLoader {
+func NewNeoForgeLoader(extractor IconExtractor) ModLoader {
 	return &NeoForgeLoader{
-		ForgeModernLoader: f,
+		loader: NewForgeModernLoader(extractor),
 	}
+}
+
+func (nfl *NeoForgeLoader) CanHandle(zipReader *zip.Reader) bool {
+	return nfl.loader.CanHandle(zipReader)
 }
 
 // ExtractMetadata extracts metadata from a NeoForge mod
 func (nfl *NeoForgeLoader) ExtractMetadata(zipReader *zip.Reader, jarPath string) (*models.ModMetadata, error) {
-	metadata, err := nfl.ForgeModernLoader.ExtractMetadata(zipReader, jarPath)
+	metadata, err := nfl.loader.ExtractMetadata(zipReader, jarPath)
 	if err != nil {
 		return nil, err
 	}
